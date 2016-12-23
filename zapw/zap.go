@@ -34,12 +34,13 @@ type Wrap struct {
 	Zap zap.Logger
 }
 
-// New should create a new zap Logger but returns nil
-// because https://godoc.org/github.com/uber-go/zap#Option has a private
-// function. Maybe this will change in the futur or someone has another
-// idea.
-func (l *Wrap) New(_ ...interface{}) log.Logger {
-	return nil
+// With creates a new inherited and shallow copied Logger with additional fields
+// added to the logging context.
+func (l *Wrap) With(fields ...log.Field) log.Logger {
+	l2 := new(Wrap)
+	*l2 = *l
+	l2.Zap = l.Zap.With(doFieldWrap(fields...)...)
+	return l2
 }
 
 // Fatal exists the app with logging the error
@@ -82,7 +83,7 @@ func doFieldWrap(fs ...log.Field) []zap.Field {
 	}
 
 	if err := log.Fields(fs).AddTo(fw); err != nil {
-		fw.AddString(log.ErrorKeyName, fmt.Sprintf("%+v", err))
+		fw.AddString(log.KeyNameError, fmt.Sprintf("%+v", err))
 	}
 	return fw.zf
 }
@@ -101,7 +102,7 @@ func (se *zapFieldWrap) AddInt64(k string, v int64) {
 }
 func (se *zapFieldWrap) AddMarshaler(k string, v log.Marshaler) error {
 	if err := v.MarshalLog(se); err != nil {
-		se.AddString(log.ErrorKeyName, fmt.Sprintf("%+v", err))
+		se.AddString(log.KeyNameError, fmt.Sprintf("%+v", err))
 	}
 	return nil
 }

@@ -161,23 +161,36 @@ func TestAddMarshaler_Error(t *testing.T) {
 		buf.String())
 }
 
-func TestStdLogNewPanic(t *testing.T) {
+func TestLog_With(t *testing.T) {
+
+	var buf bytes.Buffer
+	pLog := logw.NewLog(
+		logw.WithWriter(&buf),
+		logw.WithLevel(logw.LevelInfo),
+		logw.WithFields(log.Int("parent_info1_level", 2)),
+	)
+	cLog := pLog.With(log.Int("child_debug1_level", 1))
+	assert.Empty(t, buf.String(), "Expecting no logging output")
+
+	pLog.Debug("Root: Debug Message")
+	cLog.Info("Child1: Info Message", log.Int("info_child_key", 815))
+
+	assert.NotContains(t, buf.String(), "Root: Debug Message")
+	assert.Contains(t, buf.String(), "Child1: Info Message")
+	assert.Contains(t, buf.String(), "parent_info1_level: 2 child_debug1_level: 1 info_child_key: 815")
+
+	cLog.SetLevel(logw.LevelFatal)
+	pLog.Info("Parent Info", log.Int("parent_info2", 457))
+	assert.Contains(t, buf.String(), `Parent Info parent_info1_level: 2 parent_info2: 457`)
 
 	defer func() {
 		if r := recover(); r != nil {
-			if msg, ok := r.(string); ok {
-				assert.EqualValues(t, "Arguments to New() can only be Option types!", msg)
-			} else {
-				t.Error("Expecting a string")
-			}
+			assert.Contains(t, r.(string), `Paaaaanic parent_info1_level: 2 child_debug1_level: 1`)
+		} else {
+			t.Error("Expecting a panic")
 		}
 	}()
-
-	var buf bytes.Buffer
-	sl := logw.NewLog(
-		logw.WithWriter(&buf),
-	)
-	sl.New(logw.WithLevel(logw.LevelDebug), 1)
+	cLog.Fatal("Paaaaanic")
 }
 
 func TestStdLogFatal(t *testing.T) {

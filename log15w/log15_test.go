@@ -41,6 +41,15 @@ func getLog15(lvl log15.Lvl) string {
 	return buf.String()
 }
 
+func TestLog15_With(t *testing.T) {
+	buf := &bytes.Buffer{}
+	l := log15w.NewLog15(log15.LvlDebug, log15.StreamHandler(buf, log15.JsonFormat()), "Hello", "Gophers")
+	l2 := l.With(log.String("child", "c1"))
+	l2.Info("Child2", log.String("child3", "c3"))
+	// Flaky test because internal the logger stores entries in a map.
+	assert.Contains(t, buf.String(), `"child":"c1","child3":"c3"`)
+}
+
 func TestNewLog15_Debug(t *testing.T) {
 	out := getLog15(log15.LvlDebug)
 	assert.Contains(t, out, `"error":"I'm a debug error"`)

@@ -298,14 +298,14 @@ func TestField_Error(t *testing.T) {
 	f := Err(err)
 	assert.Exactly(t, typeString, f.fieldType)
 	assert.Exactly(t, data, f.string)
-	assert.Exactly(t, ErrorKeyName, f.key)
+	assert.Exactly(t, KeyNameError, f.key)
 }
 
 func TestField_Error_Nil(t *testing.T) {
 	f := Err(nil)
 	assert.Exactly(t, typeString, f.fieldType)
 	assert.Exactly(t, `<nil>`, f.string)
-	assert.Exactly(t, ErrorKeyName, f.key)
+	assert.Exactly(t, KeyNameError, f.key)
 }
 
 func TestField_ErrorWithKey(t *testing.T) {

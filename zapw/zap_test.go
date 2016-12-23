@@ -42,8 +42,6 @@ func getZap(lvl zap.Level) (*bytes.Buffer, log.Logger) {
 func getZapWithLog(lvl zap.Level) string {
 	buf, l := getZap(lvl)
 
-	println("level", l.IsDebug(), l.IsInfo(), lvl.String())
-
 	if l.IsDebug() {
 		l.Debug("log_15_debug", log.Err(errors.New("I'm an debug error")), log.Float64("pi", 3.14159), log.String("kDebug", "v1"), log.Duration("debugDur", time.Minute))
 	}
@@ -51,6 +49,14 @@ func getZapWithLog(lvl zap.Level) string {
 		l.Info("log_15_info", log.Err(errors.New("I'm an info error")), log.Float64("e", 2.7182), log.String("kInfo", "v1"), log.Duration("infoDur", time.Hour))
 	}
 	return buf.String()
+}
+
+func TestWrap_With(t *testing.T) {
+	buf, l := getZap(zap.InfoLevel)
+	l2 := l.With(log.String("Child1 Prefix", "child1"))
+	l2.Info("Child1", log.String("child2", "c2"))
+	// Flaky test because internally a map
+	assert.Contains(t, buf.String(), `"level":"info","msg":"Child1","answer":42,"Child1 Prefix":"child1","child2":"c2"`)
 }
 
 func TestNewJSON_Debug(t *testing.T) {

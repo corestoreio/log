@@ -21,7 +21,7 @@ type BlackHole struct {
 }
 
 // New returns a new Logger that has this logger's context plus the given context
-func (l BlackHole) New(_ ...interface{}) Logger {
+func (l BlackHole) With(...Field) Logger {
 	return BlackHole{EnableDebug: l.EnableDebug, EnableInfo: l.EnableInfo}
 }
 

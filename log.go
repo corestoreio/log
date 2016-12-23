@@ -21,28 +21,26 @@ import (
 	"github.com/corestoreio/errors"
 )
 
-// ErrorKeyName whenever an error occurs during marshaling this value defines
+// KeyNameError whenever an error occurs during marshaling this value defines
 // the official key name in the log stream.
-const ErrorKeyName = `error`
+const KeyNameError = `error`
+
+// KeyNameDuration defines the name of the duration field logging with the
+// struct type "Deferred".
+const KeyNameDuration = `duration`
 
 // Logger defines the minimum requirements for logging. See doc.go for more
 // details.
 type Logger interface {
-	// New returns a new Logger that has this logger's context plus the given
-	// context. Deprecated.
-	New(ctx ...interface{}) Logger
-
-	// TODO Create a child logger, and optionally add some context to that logger. Remove New()
-	// TODO With(...Field) Logger
-
+	// With returns a new Logger that has this logger's context plus the given
+	// Fields.
+	With(...Field) Logger
 	// Debug outputs information for developers including a stack trace.
 	Debug(msg string, fields ...Field)
 	// Info outputs information for users of the app
 	Info(msg string, fields ...Field)
-
 	// Fatal exists the app with logging the error
 	Fatal(msg string, fields ...Field)
-
 	// SetLevel sets the global log level
 	SetLevel(int)
 	// IsDebug returns true if Debug level is enabled
@@ -108,7 +106,7 @@ func (wt WriteTypes) AddMarshaler(key string, value Marshaler) error {
 			wt.Separator = Separator
 		}
 		_, _ = wt.W.WriteString(wt.Separator)
-		_, _ = wt.W.WriteString(ErrorKeyName)
+		_, _ = wt.W.WriteString(KeyNameError)
 		if wt.AssignmentChar == "" {
 			wt.AssignmentChar = AssignmentChar
 		}
@@ -144,8 +142,9 @@ func (wt WriteTypes) Nest(key string, f func(KeyValuer) error) error {
 // Deferred defines a logger type which can be used to trace the duration.
 // Usage:
 //		function main(){
-//			var PkgLog = log.NewStdLog()
-// 			defer log.WhenDone(PkgLog).Info("Stats", log.String("Package", "main"))
+//			lg := log.NewStdLog()
+//			// my code ...
+// 			defer log.WhenDone(lg).Info("Stats", log.String("Package", "main"))
 //			...
 // 		}
 // Outputs the duration for the main action.
@@ -160,10 +159,10 @@ func WhenDone(l Logger) Deferred {
 	start := time.Now()
 	return Deferred{
 		Info: func(msg string, fields ...Field) {
-			l.Info(msg, append(fields, Duration("Duration", time.Since(start)))...)
+			l.Info(msg, append(fields, Duration(KeyNameDuration, time.Since(start)))...)
 		},
 		Debug: func(msg string, fields ...Field) {
-			l.Debug(msg, append(fields, Duration("Duration", time.Since(start)))...)
+			l.Debug(msg, append(fields, Duration(KeyNameDuration, time.Since(start)))...)
 		},
 	}
 }

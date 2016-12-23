@@ -14,9 +14,9 @@
 
 package logw
 
-// Most of this code can be improved to fits the needs for others.
-// Main reason for implementing this was to provide a basic leveled logger without
-// any dependencies to third party packages.
+// Most of this code can be improved to fits the needs for others. Main reason
+// for implementing this was to provide a basic leveled logger without any
+// dependencies to third party packages.
 
 import (
 	"io"
@@ -40,6 +40,8 @@ type Log struct {
 	debug *std.Logger
 	info  *std.Logger
 	fatal *std.Logger
+	// ctx is only set when we act as a child logger
+	ctx log.Fields
 }
 
 // Option can be used as an argument in NewLog to configure a standard logger.
@@ -115,18 +117,20 @@ func WithFatal(out io.Writer, prefix string, flag int) Option {
 	}
 }
 
-// New returns a new Logger that has this logger's context plus the given context
-// This function panics if an argument is not of type Option.
-func (l *Log) New(iOpts ...interface{}) log.Logger {
-	var opts = make([]Option, len(iOpts))
-	for i, iopt := range iOpts {
-		if o, ok := iopt.(Option); ok {
-			opts[i] = o
-		} else {
-			panic("Arguments to New() can only be Option types!")
-		}
+// WithFields adds fields as a logging prefix to the internal stack.
+func WithFields(fields ...log.Field) Option {
+	return func(l *Log) {
+		l.ctx = append(l.ctx, fields...)
 	}
-	return NewLog(opts...)
+}
+
+// With creates a new inherited and shallow copied Logger with additional fields
+// added to the logging context.
+func (l *Log) With(fields ...log.Field) log.Logger {
+	l2 := new(Log)
+	*l2 = *l
+	l2.ctx = append(l2.ctx, fields...)
+	return l2
 }
 
 // Debug logs a debug entry.
@@ -146,6 +150,14 @@ func (l *Log) Fatal(msg string, fields ...log.Field) {
 
 // log logs a leveled entry. Panics if an unknown level has been provided.
 func (l *Log) log(level int, msg string, fs log.Fields) {
+
+	if ctxl := len(l.ctx); ctxl > 0 {
+		all := make(log.Fields, 0, ctxl+len(fs))
+		all = append(all, l.ctx...)
+		all = append(all, fs...)
+		fs = all
+	}
+
 	if l.level >= level {
 		switch level {
 		case LevelDebug:
@@ -159,7 +171,7 @@ func (l *Log) log(level int, msg string, fs log.Fields) {
 			l.fatal.Panic(fs.ToString(msg))
 			break
 		default:
-			panic("Unknown Log Level")
+			panic("[logw] Unknown Log Level")
 		}
 	}
 }

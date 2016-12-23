@@ -133,7 +133,7 @@ func (fs Fields) ToString(msg string) string {
 	_, _ = buf.WriteString(msg)
 	if err := fs.AddTo(wt); err != nil {
 		_, _ = buf.WriteString(Separator)
-		_, _ = buf.WriteString(ErrorKeyName)
+		_, _ = buf.WriteString(KeyNameError)
 		_, _ = buf.WriteString(AssignmentChar)
 		_, _ = buf.WriteString(fmt.Sprintf("%+v", err))
 	}
@@ -340,9 +340,9 @@ func Duration(key string, val time.Duration) Field {
 // <nil> if the error is nil.
 func Err(err error) Field {
 	if err == nil {
-		return String(ErrorKeyName, "<nil>")
+		return String(KeyNameError, "<nil>")
 	}
-	return String(ErrorKeyName, err.Error())
+	return String(KeyNameError, err.Error())
 }
 
 // ErrWithKey constructs a Field that stores err under a key. Prints
