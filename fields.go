@@ -105,8 +105,21 @@ type KeyValuer interface {
 // Marshaler.
 type AddStringFn func(string, string)
 
+// IDEA !
+//// Field an interface which creates a single log field.
+//type Field interface{
+//	make() field
+//}
+
 // Fields a slice of n Field types
 type Fields []Field
+
+// Add allows to bypass Go's append function when you have a
+// pre-defined slice of fields but would like to add in another scenario more
+// fields to a Log function.
+func (fs Fields) Add() Field {
+	return Field{fieldType: typeFields, obj: fs}
+}
 
 // AddTo adds all fields within this slice to a KeyValue encoder.
 // Breaks on first error.
@@ -222,13 +235,6 @@ func (f Field) AddTo(kv KeyValuer) error {
 		return errors.NewFatalf("[log] Unknown field type found: %v", f)
 	}
 	return nil
-}
-
-// FieldCollection allows to bypass Go's append function when you have a
-// pre-defined slice of fields but would like to add in another scenario more
-// fields.
-func FieldCollection(fs ...Field) Field {
-	return Field{fieldType: typeFields, obj: Fields(fs)}
 }
 
 // Bool constructs a Field with the given key and value.

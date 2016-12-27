@@ -67,8 +67,8 @@ func TestFields_ToString_Error(t *testing.T) {
 	assert.Contains(t, str, "[log] AddTo.TextMarshaler\n")
 }
 
-func TestField_FieldCollection(t *testing.T) {
-	f := FieldCollection(String("a", "b"), Int("c", 3))
+func TestFields_Add(t *testing.T) {
+	f := Fields{String("a", "b"), Int("c", 3)}.Add()
 	assert.Exactly(t, typeFields, f.fieldType)
 	assert.Exactly(t, Fields{String("a", "b"), Int("c", 3)}, f.obj.(Fields))
 
