@@ -60,6 +60,7 @@ const (
 	typeGoStringer
 	typeObject
 	typeMarshaler
+	typeFields
 )
 
 // textMarshaler a copy of encoding.TextMarshaler
@@ -211,10 +212,23 @@ func (f Field) AddTo(kv KeyValuer) error {
 		return kv.AddMarshaler(f.key, f.obj.(Marshaler))
 	case typeStringFn:
 		return errors.Wrap(f.strFn(kv.AddString), "[log] AddTo.StringFn")
+	case typeFields:
+		for _, f := range f.obj.(Fields) {
+			if err := f.AddTo(kv); err != nil {
+				return errors.Wrap(err, "[log] AddTo.FieldCollection")
+			}
+		}
 	default:
 		return errors.NewFatalf("[log] Unknown field type found: %v", f)
 	}
 	return nil
+}
+
+// FieldCollection allows to bypass Go's append function when you have a
+// pre-defined slice of fields but would like to add in another scenario more
+// fields.
+func FieldCollection(fs ...Field) Field {
+	return Field{fieldType: typeFields, obj: Fields(fs)}
 }
 
 // Bool constructs a Field with the given key and value.
