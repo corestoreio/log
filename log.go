@@ -39,10 +39,6 @@ type Logger interface {
 	Debug(msg string, fields ...Field)
 	// Info outputs information for users of the app
 	Info(msg string, fields ...Field)
-	// Fatal exists the app with logging the error
-	Fatal(msg string, fields ...Field)
-	// SetLevel sets the global log level
-	SetLevel(int)
 	// IsDebug returns true if Debug level is enabled
 	IsDebug() bool
 	// IsInfo returns true if Info level is enabled

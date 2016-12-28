@@ -43,11 +43,6 @@ func (l *Wrap) With(fields ...log.Field) log.Logger {
 	return l2
 }
 
-// Fatal exists the app with logging the error
-func (l *Wrap) Fatal(msg string, fields ...log.Field) {
-	l.Zap.Fatal(msg, doFieldWrap(fields...)...)
-}
-
 // Info outputs information for users of the app
 func (l *Wrap) Info(msg string, fields ...log.Field) {
 	l.Zap.Info(msg, doFieldWrap(fields...)...)
@@ -56,11 +51,6 @@ func (l *Wrap) Info(msg string, fields ...log.Field) {
 // Debug outputs information for developers.
 func (l *Wrap) Debug(msg string, fields ...log.Field) {
 	l.Zap.Debug(msg, doFieldWrap(fields...)...)
-}
-
-// SetLevel sets the log level.
-func (l *Wrap) SetLevel(lvl int) {
-	l.Level = zap.Level(lvl)
 }
 
 // IsDebug returns true if Debug level is enabled

@@ -31,14 +31,8 @@ func (l BlackHole) Debug(_ string, _ ...Field) {}
 // Info logs an info entry. Noop.
 func (l BlackHole) Info(_ string, _ ...Field) {}
 
-// Fatal logs a fatal entry then panics.
-func (l BlackHole) Fatal(msg string, _ ...Field) { panic("exit due to fatal error: " + msg) }
-
 // IsDebug determines if this logger logs a debug statement. Returns always true.
 func (l BlackHole) IsDebug() bool { return l.EnableDebug }
 
 // IsInfo determines if this logger logs an info statement. Returns always true.
 func (l BlackHole) IsInfo() bool { return l.EnableInfo }
-
-// SetLevel sets the level of this logger. Noop.
-func (l BlackHole) SetLevel(_ int) {}

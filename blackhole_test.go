@@ -13,22 +13,3 @@
 // limitations under the License.
 
 package log_test
-
-import (
-	"testing"
-
-	"github.com/corestoreio/log"
-	"github.com/stretchr/testify/assert"
-)
-
-func TestBlackHoleFatal(t *testing.T) {
-
-	defer func() {
-		if r := recover(); r != nil {
-			assert.Contains(t, r.(string), "This is sparta")
-		}
-	}()
-
-	nl := &log.BlackHole{}
-	nl.Fatal("This is sparta")
-}

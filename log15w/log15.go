@@ -49,11 +49,6 @@ func (l *Log15) With(fields ...log.Field) log.Logger {
 	return l2
 }
 
-// Fatal exists the app with logging the error
-func (l *Log15) Fatal(msg string, fields ...log.Field) {
-	l.Wrap.Crit(msg, doLog15FieldWrap(l.ctx, fields...)...)
-}
-
 // Info outputs information for users of the app
 func (l *Log15) Info(msg string, fields ...log.Field) {
 	l.Wrap.Info(msg, doLog15FieldWrap(l.ctx, fields...)...)
@@ -62,12 +57,6 @@ func (l *Log15) Info(msg string, fields ...log.Field) {
 // Debug outputs information for developers.
 func (l *Log15) Debug(msg string, fields ...log.Field) {
 	l.Wrap.Debug(msg, doLog15FieldWrap(l.ctx, fields...)...)
-}
-
-// SetLevel sets the log level. Panics on incorrect value
-func (l *Log15) SetLevel(lvl int) {
-	l.Level = log15.Lvl(lvl)
-	_, _ = log15.LvlFromString(l.Level.String()) // check for valid setting and panic maybe
 }
 
 // IsDebug returns true if Debug level is enabled

@@ -30,15 +30,14 @@ var _ log.Logger = (*logw.Log)(nil)
 
 func TestStdLog(t *testing.T) {
 
-	var buf bytes.Buffer
+	var buf = new(bytes.Buffer)
 
 	sl := logw.NewLog(
-		logw.WithLevel(logw.LevelDebug),
-		logw.WithDebug(&buf, "TEST-DEBUG ", std.LstdFlags),
-		logw.WithInfo(&buf, "TEST-INFO ", std.LstdFlags),
-		logw.WithFatal(&buf, "TEST-FATAL ", std.LstdFlags),
+		logw.WithLevel(logw.LevelInfo),
+		logw.WithDebug(buf, "TEST-DEBUG ", std.LstdFlags),
+		logw.WithInfo(buf, "TEST-INFO ", std.LstdFlags),
 	)
-	sl.SetLevel(logw.LevelInfo)
+
 	assert.False(t, sl.IsDebug())
 	assert.True(t, sl.IsInfo())
 
@@ -52,7 +51,13 @@ func TestStdLog(t *testing.T) {
 	assert.NotContains(t, logs, "Debug2")
 
 	buf.Reset()
-	sl.SetLevel(logw.LevelDebug)
+
+	sl = logw.NewLog(
+		logw.WithLevel(logw.LevelDebug),
+		logw.WithDebug(buf, "TEST-DEBUG ", std.LstdFlags),
+		logw.WithInfo(buf, "TEST-INFO ", std.LstdFlags),
+	)
+
 	assert.True(t, sl.IsDebug())
 	assert.True(t, sl.IsInfo())
 	sl.Debug("my Debug", log.Float64("float", 3.14152))
@@ -68,10 +73,10 @@ func TestStdLog(t *testing.T) {
 
 func TestStdLogGlobals(t *testing.T) {
 
-	var buf bytes.Buffer
+	buf := new(bytes.Buffer)
 	sl := logw.NewLog(
 		logw.WithLevel(logw.LevelDebug),
-		logw.WithWriter(&buf),
+		logw.WithWriter(buf),
 		logw.WithFlag(std.Ldate),
 	)
 	sl.Debug("my Debug", log.Float64("float", 3.14152))
@@ -88,12 +93,12 @@ func TestStdLogGlobals(t *testing.T) {
 
 func TestStdLogFormat(t *testing.T) {
 
-	var buf bytes.Buffer
-	var bufInfo bytes.Buffer
+	buf := new(bytes.Buffer)
+	bufInfo := new(bytes.Buffer)
 	sl := logw.NewLog(
 		logw.WithLevel(logw.LevelDebug),
-		logw.WithWriter(&buf),
-		logw.WithInfo(&bufInfo, "TEST-INFO ", std.LstdFlags),
+		logw.WithWriter(buf),
+		logw.WithInfo(bufInfo, "TEST-INFO ", std.LstdFlags),
 	)
 
 	sl.Debug("my Debug", log.Float64("float1", 3.14152))
@@ -129,10 +134,10 @@ func (mm marshalMock) MarshalLog(kv log.KeyValuer) error {
 }
 
 func TestAddMarshaler(t *testing.T) {
-	var buf bytes.Buffer
+	buf := new(bytes.Buffer)
 	sl := logw.NewLog(
 		logw.WithLevel(logw.LevelDebug),
-		logw.WithWriter(&buf),
+		logw.WithWriter(buf),
 	)
 
 	sl.Debug("my Debug", log.Float64("float1", math.SqrtE))
@@ -146,10 +151,10 @@ func TestAddMarshaler(t *testing.T) {
 }
 
 func TestAddMarshaler_Error(t *testing.T) {
-	var buf bytes.Buffer
+	buf := new(bytes.Buffer)
 	sl := logw.NewLog(
 		logw.WithLevel(logw.LevelDebug),
-		logw.WithWriter(&buf),
+		logw.WithWriter(buf),
 	)
 
 	sl.Debug("my Debug", log.Float64("float1", math.SqrtE))
@@ -163,9 +168,9 @@ func TestAddMarshaler_Error(t *testing.T) {
 
 func TestLog_With(t *testing.T) {
 
-	var buf bytes.Buffer
+	buf := new(bytes.Buffer)
 	pLog := logw.NewLog(
-		logw.WithWriter(&buf),
+		logw.WithWriter(buf),
 		logw.WithLevel(logw.LevelInfo),
 		logw.WithFields(log.Int("parent_info1_level", 2)),
 	)
@@ -179,31 +184,7 @@ func TestLog_With(t *testing.T) {
 	assert.Contains(t, buf.String(), "Child1: Info Message")
 	assert.Contains(t, buf.String(), "parent_info1_level: 2 child_debug1_level: 1 info_child_key: 815")
 
-	cLog.SetLevel(logw.LevelFatal)
 	pLog.Info("Parent Info", log.Int("parent_info2", 457))
 	assert.Contains(t, buf.String(), `Parent Info parent_info1_level: 2 parent_info2: 457`)
 
-	defer func() {
-		if r := recover(); r != nil {
-			assert.Contains(t, r.(string), `Paaaaanic parent_info1_level: 2 child_debug1_level: 1`)
-		} else {
-			t.Error("Expecting a panic")
-		}
-	}()
-	cLog.Fatal("Paaaaanic")
-}
-
-func TestStdLogFatal(t *testing.T) {
-
-	defer func() {
-		if r := recover(); r != nil {
-			assert.Contains(t, r.(string), "This is sparta")
-		}
-	}()
-
-	var buf bytes.Buffer
-	sl := logw.NewLog(
-		logw.WithWriter(&buf),
-	)
-	sl.Fatal("This is sparta")
 }

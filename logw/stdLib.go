@@ -39,7 +39,6 @@ type Log struct {
 	flag  int // global flag http://golang.org/pkg/log/#pkg-constants
 	debug *std.Logger
 	info  *std.Logger
-	fatal *std.Logger
 	// ctx is only set when we act as a child logger
 	ctx log.Fields
 }
@@ -65,9 +64,6 @@ func NewLog(opts ...Option) *Log {
 	if sl.info == nil {
 		sl.info = std.New(sl.gw, "INFO ", sl.flag)
 	}
-	if sl.fatal == nil {
-		sl.fatal = std.New(sl.gw, "FATAL ", sl.flag)
-	}
 	return sl
 }
 
@@ -92,7 +88,7 @@ func WithFlag(f int) Option {
 // WithLevel sets the log level. See constants Level*
 func WithLevel(level int) Option {
 	return func(l *Log) {
-		l.SetLevel(level)
+		l.level = level
 	}
 }
 
@@ -107,13 +103,6 @@ func WithDebug(out io.Writer, prefix string, flag int) Option {
 func WithInfo(out io.Writer, prefix string, flag int) Option {
 	return func(l *Log) {
 		l.info = std.New(out, prefix, flag)
-	}
-}
-
-// WithFatal applies options for fatal logging
-func WithFatal(out io.Writer, prefix string, flag int) Option {
-	return func(l *Log) {
-		l.fatal = std.New(out, prefix, flag)
 	}
 }
 
@@ -143,11 +132,6 @@ func (l *Log) Info(msg string, fields ...log.Field) {
 	l.log(LevelInfo, msg, fields)
 }
 
-// Fatal logs a fatal entry then panics.
-func (l *Log) Fatal(msg string, fields ...log.Field) {
-	l.log(LevelFatal, msg, fields)
-}
-
 // log logs a leveled entry. Panics if an unknown level has been provided.
 func (l *Log) log(level int, msg string, fs log.Fields) {
 
@@ -163,13 +147,8 @@ func (l *Log) log(level int, msg string, fs log.Fields) {
 		case LevelDebug:
 			// l.debug.Print(stdFormat(msg, append(args, "in", getStackTrace())))
 			l.debug.Print(fs.ToString(msg))
-			break
 		case LevelInfo:
 			l.info.Print(fs.ToString(msg))
-			break
-		case LevelFatal:
-			l.fatal.Panic(fs.ToString(msg))
-			break
 		default:
 			panic("[logw] Unknown Log Level")
 		}
@@ -184,9 +163,4 @@ func (l *Log) IsDebug() bool {
 // IsInfo determines if this logger logs an info statement.
 func (l *Log) IsInfo() bool {
 	return l.level >= LevelInfo
-}
-
-// SetLevel sets the level of this logger.
-func (l *Log) SetLevel(level int) {
-	l.level = level
 }
