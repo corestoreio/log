@@ -105,20 +105,23 @@ type KeyValuer interface {
 // Marshaler.
 type AddStringFn func(string, string)
 
-// IDEA !
-//// Field an interface which creates a single log field.
-//type Field interface{
-//	make() field
-//}
+// Field is a deferred marshaling operation used to add a key-value pair to a
+// logger's context. Keys and values are appropriately escaped for the current
+// encoding scheme (e.g., JSON).
+type Field interface {
+	// make creates a new non-pointer field. If it would be a pointer this
+	// function name would be new ;-).
+	make() field
+	// AddTo encodes a field to a string
+	AddTo(kv KeyValuer) error
+}
 
-// Fields a slice of n Field types
+// Fields a slice of n Field types. Fields implements the Field interface and
+// can be added to a function in the Logger interface in a simple way.
 type Fields []Field
 
-// Add allows to bypass Go's append function when you have a
-// pre-defined slice of fields but would like to add in another scenario more
-// fields to a Log function.
-func (fs Fields) Add() Field {
-	return Field{fieldType: typeFields, obj: fs}
+func (fs Fields) make() field {
+	return field{fieldType: typeFields, obj: fs}
 }
 
 // AddTo adds all fields within this slice to a KeyValue encoder.
@@ -155,10 +158,10 @@ func (fs Fields) ToString(msg string) string {
 	return buf.String()
 }
 
-// A Field is a deferred marshaling operation used to add a key-value pair to
+// field is a deferred marshaling operation used to add a key-value pair to
 // a logger's context. Keys and values are appropriately escaped for the current
 // encoding scheme (e.g., JSON).
-type Field struct {
+type field struct {
 	key string
 	// fieldType specifies the used type. If 0 this struct is empty
 	fieldType
@@ -169,8 +172,12 @@ type Field struct {
 	obj   interface{}
 }
 
+func (f field) make() field {
+	return f
+}
+
 // AddTo adds a field to KeyValue encoder
-func (f Field) AddTo(kv KeyValuer) error {
+func (f field) AddTo(kv KeyValuer) error {
 	switch f.fieldType {
 	case typeBool:
 		kv.AddBool(f.key, f.int64 == 1)
@@ -181,8 +188,8 @@ func (f Field) AddTo(kv KeyValuer) error {
 	case typeInts:
 		buf := getBuffer()
 		vals := f.obj.([]int)
-		for i, int := range vals {
-			_, _ = buf.WriteString(strconv.Itoa(int))
+		for i, v := range vals {
+			_, _ = buf.WriteString(strconv.Itoa(v))
 			if i < len(vals)-1 {
 				_, _ = buf.WriteString(", ")
 			}
@@ -194,8 +201,8 @@ func (f Field) AddTo(kv KeyValuer) error {
 	case typeInt64s:
 		buf := getBuffer()
 		vals := f.obj.([]int64)
-		for i, int64 := range vals {
-			_, _ = buf.WriteString(strconv.FormatInt(int64, 10))
+		for i, v := range vals {
+			_, _ = buf.WriteString(strconv.FormatInt(v, 10))
 			if i < len(vals)-1 {
 				_, _ = buf.WriteString(", ")
 			}
@@ -243,39 +250,39 @@ func Bool(key string, value bool) Field {
 	if value {
 		val = 1
 	}
-	return Field{key: key, fieldType: typeBool, int64: val}
+	return field{key: key, fieldType: typeBool, int64: val}
 }
 
 // Float64 constructs a Field with the given key and value.
 func Float64(key string, value float64) Field {
-	return Field{key: key, fieldType: typeFloat64, float64: value}
+	return field{key: key, fieldType: typeFloat64, float64: value}
 }
 
 // Int constructs a Field with the given key and value.
 func Int(key string, val int) Field {
-	return Field{key: key, fieldType: typeInt, int64: int64(val)}
+	return field{key: key, fieldType: typeInt, int64: int64(val)}
 }
 
 // Ints constructs a Field with the given key and multiple values.
 // Values will be joined together via a comma.
 func Ints(key string, vals ...int) Field {
-	return Field{key: key, fieldType: typeInts, obj: vals}
+	return field{key: key, fieldType: typeInts, obj: vals}
 }
 
 // Int64 constructs a Field with the given key and value.
 func Int64(key string, val int64) Field {
-	return Field{key: key, fieldType: typeInt64, int64: val}
+	return field{key: key, fieldType: typeInt64, int64: val}
 }
 
 // Int64s constructs a Field with the given key and multiple values.
 // Values will be joined together via a comma.
 func Int64s(key string, vals ...int64) Field {
-	return Field{key: key, fieldType: typeInt64s, obj: vals}
+	return field{key: key, fieldType: typeInt64s, obj: vals}
 }
 
 // Uint constructs a Field with the given key and value.
 func Uint(key string, val uint) Field {
-	return Field{key: key, fieldType: typeInt, int64: int64(val)}
+	return field{key: key, fieldType: typeInt, int64: int64(val)}
 }
 
 // Uint64 constructs a Field with the given key and value.
@@ -284,43 +291,43 @@ func Uint64(key string, val uint64) Field {
 	if val > math.MaxInt64 {
 		val = math.MaxInt64
 	}
-	return Field{key: key, fieldType: typeInt64, int64: int64(val)}
+	return field{key: key, fieldType: typeInt64, int64: int64(val)}
 }
 
 // String constructs a Field with the given key and value.
 func String(key string, val string) Field {
-	return Field{key: key, fieldType: typeString, string: val}
+	return field{key: key, fieldType: typeString, string: val}
 }
 
 // Strings constructs a Field with the given key and multiple values.
 // Values will be joined together via a comma.
 func Strings(key string, vals ...string) Field {
-	return Field{key: key, fieldType: typeStrings, obj: vals}
+	return field{key: key, fieldType: typeStrings, obj: vals}
 }
 
 // StringFn constructs a Field with the given key and a closure to the
 // AddStringFn.
 func StringFn(key string, fn func(AddStringFn) error) Field {
-	return Field{key: key, fieldType: typeStringFn, strFn: fn}
+	return field{key: key, fieldType: typeStringFn, strFn: fn}
 }
 
 // Stringer constructs a Field with the given key and value. The value
 // is the result of the String() method.
 func Stringer(key string, val fmt.Stringer) Field {
-	return Field{key: key, fieldType: typeStringer, obj: val}
+	return field{key: key, fieldType: typeStringer, obj: val}
 }
 
 // GoStringer constructs a Field with the given key and value. The value
 // is the result of the GoString() method.
 func GoStringer(key string, val fmt.GoStringer) Field {
-	return Field{key: key, fieldType: typeGoStringer, obj: val}
+	return field{key: key, fieldType: typeGoStringer, obj: val}
 }
 
 // Text constructs a Field with the given key and value. The value is the result
 // of the MarshalText() method. See package encoding in the standard library for
 // encoding.TextMarshaler.
 func Text(key string, val textMarshaler) Field {
-	return Field{key: key, fieldType: typeStringFn, strFn: func(addString AddStringFn) error {
+	return field{key: key, fieldType: typeStringFn, strFn: func(addString AddStringFn) error {
 		txt, err := val.MarshalText()
 		if err != nil {
 			return errors.Wrap(err, "[log] AddTo.TextMarshaler")
@@ -334,7 +341,7 @@ func Text(key string, val textMarshaler) Field {
 // of the MarshalJSON() method. See package encoding/json in the standard
 // library for json.Marshaler.
 func JSON(key string, val jsonMarshaler) Field {
-	return Field{key: key, fieldType: typeStringFn, strFn: func(addString AddStringFn) error {
+	return field{key: key, fieldType: typeStringFn, strFn: func(addString AddStringFn) error {
 		j, err := val.MarshalJSON()
 		if err != nil {
 			return errors.Wrap(err, "[log] JSON.MarshalJSON")
@@ -353,7 +360,7 @@ func Time(key string, val time.Time) Field {
 // Duration constructs a Field with the given key and value. It represents
 // durations as an integer number of nanoseconds.
 func Duration(key string, val time.Duration) Field {
-	return Field{key: key, fieldType: typeInt64, int64: val.Nanoseconds()}
+	return field{key: key, fieldType: typeInt64, int64: val.Nanoseconds()}
 }
 
 // Err constructs a Field that stores err under the key log.ErrorKeyName. Prints
@@ -381,18 +388,18 @@ func ErrWithKey(key string, err error) Field {
 // If encoding fails (e.g., trying to serialize a map[int]string to JSON), Object
 // includes the error message in the final log output.
 func Object(key string, val interface{}) Field {
-	return Field{key: key, fieldType: typeObject, obj: val}
+	return field{key: key, fieldType: typeObject, obj: val}
 }
 
 // Marshal constructs a field with the given key and log.Marshaler. It
 // provides a flexible, but still type-safe and efficient, way to add
 // user-defined types to the logging context.
 func Marshal(key string, val Marshaler) Field {
-	return Field{key: key, fieldType: typeMarshaler, obj: val}
+	return field{key: key, fieldType: typeMarshaler, obj: val}
 }
 
 // Nest takes a key and a variadic number of Fields and creates a nested
 // namespace.
 func Nest(key string, fields ...Field) Field {
-	return Field{key: key, fieldType: typeMarshaler, obj: Fields(fields)}
+	return field{key: key, fieldType: typeMarshaler, obj: Fields(fields)}
 }

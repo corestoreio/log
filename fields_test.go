@@ -42,6 +42,8 @@ var _ textMarshaler = (*iFaceCheck)(nil)
 var _ encoding.TextMarshaler = (*iFaceCheck)(nil)
 var _ jsonMarshaler = (*iFaceCheck)(nil)
 var _ json.Marshaler = (*iFaceCheck)(nil)
+var _ Field = (*field)(nil)
+var _ Field = (*Fields)(nil)
 
 const testKey = "MyTestKey"
 
@@ -67,8 +69,8 @@ func TestFields_ToString_Error(t *testing.T) {
 	assert.Contains(t, str, "[log] AddTo.TextMarshaler\n")
 }
 
-func TestFields_AddTo(t *testing.T) {
-	f := Fields{String("a", "b"), Int("c", 3)}.Add()
+func TestFields_Add(t *testing.T) {
+	f := Fields{String("a", "b"), Int("c", 3)}.make()
 	assert.Exactly(t, typeFields, f.fieldType)
 	assert.Exactly(t, Fields{String("a", "b"), Int("c", 3)}, f.obj.(Fields))
 
@@ -81,28 +83,28 @@ func TestFields_AddTo(t *testing.T) {
 }
 
 func TestField_Bool(t *testing.T) {
-	f := Bool(testKey, true)
+	f := Bool(testKey, true).make()
 	assert.Exactly(t, typeBool, f.fieldType)
 	assert.Exactly(t, int64(1), f.int64)
 	assert.Exactly(t, testKey, f.key)
 }
 
 func TestField_Float64(t *testing.T) {
-	f := Float64(testKey, math.Pi)
+	f := Float64(testKey, math.Pi).make()
 	assert.Exactly(t, typeFloat64, f.fieldType)
 	assert.Exactly(t, math.Pi, f.float64)
 	assert.Exactly(t, testKey, f.key)
 }
 
 func TestField_Int(t *testing.T) {
-	f := Int(testKey, math.MaxInt32)
+	f := Int(testKey, math.MaxInt32).make()
 	assert.Exactly(t, typeInt, f.fieldType)
 	assert.Exactly(t, int64(math.MaxInt32), f.int64)
 	assert.Exactly(t, testKey, f.key)
 }
 
 func TestField_Ints(t *testing.T) {
-	f := Ints(testKey, 4, 5, 6, 7, 8)
+	f := Ints(testKey, 4, 5, 6, 7, 8).make()
 	assert.Exactly(t, typeInts, f.fieldType)
 	assert.Empty(t, f.int64)
 	assert.Exactly(t, testKey, f.key)
@@ -115,14 +117,14 @@ func TestField_Ints(t *testing.T) {
 }
 
 func TestField_Int64(t *testing.T) {
-	f := Int64(testKey, math.MaxInt64)
+	f := Int64(testKey, math.MaxInt64).make()
 	assert.Exactly(t, typeInt64, f.fieldType)
 	assert.Exactly(t, int64(math.MaxInt64), f.int64)
 	assert.Exactly(t, testKey, f.key)
 }
 
 func TestField_Int64s(t *testing.T) {
-	f := Int64s(testKey, 4, 5, 6, 7, 8)
+	f := Int64s(testKey, 4, 5, 6, 7, 8).make()
 	assert.Exactly(t, typeInt64s, f.fieldType)
 	assert.Empty(t, f.int64)
 	assert.Exactly(t, testKey, f.key)
@@ -135,14 +137,14 @@ func TestField_Int64s(t *testing.T) {
 }
 
 func TestField_Uint(t *testing.T) {
-	f := Uint(testKey, math.MaxUint32)
+	f := Uint(testKey, math.MaxUint32).make()
 	assert.Exactly(t, typeInt, f.fieldType)
 	assert.Exactly(t, int64(math.MaxUint32), f.int64)
 	assert.Exactly(t, testKey, f.key)
 }
 
 func TestField_Uint64(t *testing.T) {
-	f := Uint64(testKey, math.MaxUint64)
+	f := Uint64(testKey, math.MaxUint64).make()
 	assert.Exactly(t, typeInt64, f.fieldType)
 	assert.Exactly(t, int64(math.MaxInt64), f.int64)
 	assert.Exactly(t, testKey, f.key)
@@ -150,14 +152,14 @@ func TestField_Uint64(t *testing.T) {
 
 func TestField_String(t *testing.T) {
 	const data = `16. “One is never alone with a rubber duck.” Douglas Adams`
-	f := String(testKey, data)
+	f := String(testKey, data).make()
 	assert.Exactly(t, typeString, f.fieldType)
 	assert.Exactly(t, data, f.string)
 	assert.Exactly(t, testKey, f.key)
 }
 
 func TestField_Strings(t *testing.T) {
-	f := Strings(testKey, "a", "b", "c", "d", "e")
+	f := Strings(testKey, "a", "b", "c", "d", "e").make()
 	assert.Exactly(t, typeStrings, f.fieldType)
 	assert.Empty(t, f.string)
 	assert.Exactly(t, testKey, f.key)
@@ -171,7 +173,7 @@ func TestField_Strings(t *testing.T) {
 
 func TestField_Stringer(t *testing.T) {
 	const data = `27. “Anything invented after you're thirty-five is against the natural order of things.” Douglas Adams`
-	f := Stringer(testKey, bytes.NewBufferString(data))
+	f := Stringer(testKey, bytes.NewBufferString(data)).make()
 	assert.Exactly(t, typeStringer, f.fieldType)
 	assert.Empty(t, f.string)
 	assert.Exactly(t, testKey, f.key)
@@ -212,7 +214,7 @@ func (g gs) MarshalLog(kv KeyValuer) error {
 }
 
 func TestField_GoStringer(t *testing.T) {
-	f := GoStringer(testKey, gs{})
+	f := GoStringer(testKey, gs{}).make()
 	assert.Exactly(t, typeGoStringer, f.fieldType)
 	assert.Empty(t, f.string)
 	assert.Exactly(t, testKey, f.key)
@@ -225,7 +227,7 @@ func TestField_GoStringer(t *testing.T) {
 }
 
 func TestField_Marshaler(t *testing.T) {
-	f := Marshal(testKey, gs{data: "MarshalerMarshaler"})
+	f := Marshal(testKey, gs{data: "MarshalerMarshaler"}).make()
 	assert.Exactly(t, typeMarshaler, f.fieldType)
 	assert.Empty(t, f.string)
 	assert.Exactly(t, testKey, f.key)
@@ -239,7 +241,7 @@ func TestField_Marshaler(t *testing.T) {
 
 func TestField_Text(t *testing.T) {
 	const data = `35. “My universe is my eyes and my ears. Anything else is hearsay.” Douglas Adams`
-	f := Text(testKey, text.Chars(data))
+	f := Text(testKey, text.Chars(data)).make()
 	assert.Exactly(t, typeStringFn, f.fieldType)
 	assert.Empty(t, f.string)
 	assert.Exactly(t, testKey, f.key)
@@ -253,7 +255,7 @@ func TestField_Text(t *testing.T) {
 
 func TestField_TextError(t *testing.T) {
 	var data = gs{data: nil, err: errors.New("Errr")}
-	f := Text(testKey, data)
+	f := Text(testKey, data).make()
 	assert.Exactly(t, typeStringFn, f.fieldType)
 	assert.Empty(t, f.string)
 	assert.Exactly(t, testKey, f.key)
@@ -267,7 +269,7 @@ func TestField_TextError(t *testing.T) {
 
 func TestField_JSON(t *testing.T) {
 	const data = `12. “Reality is frequently inaccurate.” Douglas Adams`
-	f := JSON(testKey, gs{data: data})
+	f := JSON(testKey, gs{data: data}).make()
 	assert.Exactly(t, typeStringFn, f.fieldType)
 	assert.Empty(t, f.string)
 	assert.Exactly(t, testKey, f.key)
@@ -279,7 +281,7 @@ func TestField_JSON(t *testing.T) {
 }
 
 func TestField_JSONError(t *testing.T) {
-	f := JSON(testKey, gs{data: make(chan struct{})})
+	f := JSON(testKey, gs{data: make(chan struct{})}).make()
 	assert.Exactly(t, typeStringFn, f.fieldType)
 	assert.Exactly(t, testKey, f.key)
 	buf := &bytes.Buffer{}
@@ -291,7 +293,7 @@ func TestField_JSONError(t *testing.T) {
 
 func TestField_Time(t *testing.T) {
 	now := time.Now()
-	f := Time(testKey, now)
+	f := Time(testKey, now).make()
 	assert.Exactly(t, typeInt64, f.fieldType)
 	assert.Exactly(t, now.UnixNano(), f.int64)
 	assert.Exactly(t, testKey, f.key)
@@ -299,7 +301,7 @@ func TestField_Time(t *testing.T) {
 
 func TestField_Duration(t *testing.T) {
 	now := time.Hour * 2
-	f := Duration(testKey, now)
+	f := Duration(testKey, now).make()
 	assert.Exactly(t, typeInt64, f.fieldType)
 	assert.Exactly(t, now.Nanoseconds(), f.int64)
 	assert.Exactly(t, testKey, f.key)
@@ -308,14 +310,14 @@ func TestField_Duration(t *testing.T) {
 func TestField_Error(t *testing.T) {
 	const data = `15. “There is no point in using the word 'impossible' to describe something that has clearly happened.” Douglas Adams`
 	err := errors.New(data)
-	f := Err(err)
+	f := Err(err).make()
 	assert.Exactly(t, typeString, f.fieldType)
 	assert.Exactly(t, data, f.string)
 	assert.Exactly(t, KeyNameError, f.key)
 }
 
 func TestField_Error_Nil(t *testing.T) {
-	f := Err(nil)
+	f := Err(nil).make()
 	assert.Exactly(t, typeString, f.fieldType)
 	assert.Exactly(t, `<nil>`, f.string)
 	assert.Exactly(t, KeyNameError, f.key)
@@ -324,14 +326,14 @@ func TestField_Error_Nil(t *testing.T) {
 func TestField_ErrorWithKey(t *testing.T) {
 	const data = `15. “There is no point in using the word 'impossible' to describe something that has clearly happened.” Douglas Adams`
 	err := errors.New(data)
-	f := ErrWithKey("e1", err)
+	f := ErrWithKey("e1", err).make()
 	assert.Exactly(t, typeString, f.fieldType)
 	assert.Exactly(t, data, f.string)
 	assert.Exactly(t, `e1`, f.key)
 }
 
 func TestField_ErrorWithKey_Nil(t *testing.T) {
-	f := ErrWithKey(`e2`, nil)
+	f := ErrWithKey(`e2`, nil).make()
 	assert.Exactly(t, typeString, f.fieldType)
 	assert.Exactly(t, `<nil>`, f.string)
 	assert.Exactly(t, `e2`, f.key)
@@ -340,7 +342,7 @@ func TestField_ErrorWithKey_Nil(t *testing.T) {
 func TestField_Object(t *testing.T) {
 	req, _ := http.NewRequest("GET", "http://corestore.io", nil)
 	req.RemoteAddr = "192.168.0.42"
-	f := Object(testKey, req)
+	f := Object(testKey, req).make()
 	assert.Exactly(t, typeObject, f.fieldType)
 	assert.Exactly(t, req, f.obj)
 	assert.Exactly(t, testKey, f.key)
@@ -352,7 +354,7 @@ func TestField_Nest(t *testing.T) {
 		Int("nest2", 2),
 		Int64("", 3),
 		Float64("nest4", math.Log2E),
-	)
+	).make()
 	assert.Exactly(t, typeMarshaler, f.fieldType)
 	assert.Exactly(t, `nest0`, f.key)
 	buf := &bytes.Buffer{}
@@ -367,7 +369,7 @@ func TestField_Nest_Error(t *testing.T) {
 	f := Nest("nest0",
 		String("nest1", "1"),
 		Text("nest2", gs{err: errors.New("NestError. Smoke Alarm on ;-)")}),
-	)
+	).make()
 	assert.Exactly(t, typeMarshaler, f.fieldType)
 	assert.Exactly(t, `nest0`, f.key)
 	buf := &bytes.Buffer{}

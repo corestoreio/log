@@ -1,12 +1,12 @@
-BenchmarkFields_ToString-4   	  500000	      3452 ns/op	     368 B/op	      26 allocs/op
-BenchmarkFields_ToString-4   	  500000	      3497 ns/op	     368 B/op	      26 allocs/op
-BenchmarkFields_ToString-4   	  500000	      3432 ns/op	     368 B/op	      26 allocs/op
-BenchmarkFields_ToString-4   	  500000	      3410 ns/op	     368 B/op	      26 allocs/op
-BenchmarkFields_ToString-4   	  500000	      3462 ns/op	     368 B/op	      26 allocs/op
-BenchmarkFields_ToString-4   	  500000	      3441 ns/op	     368 B/op	      26 allocs/op
-BenchmarkFields_ToString-4   	  500000	      3458 ns/op	     368 B/op	      26 allocs/op
-BenchmarkFields_ToString-4   	  500000	      3498 ns/op	     368 B/op	      26 allocs/op
-BenchmarkFields_ToString-4   	  500000	      3479 ns/op	     368 B/op	      26 allocs/op
-BenchmarkFields_ToString-4   	  500000	      3431 ns/op	     368 B/op	      26 allocs/op
+BenchmarkFields_ToString-4   	  500000	      3899 ns/op	     368 B/op	      26 allocs/op
+BenchmarkFields_ToString-4   	  500000	      3698 ns/op	     368 B/op	      26 allocs/op
+BenchmarkFields_ToString-4   	  500000	      3453 ns/op	     368 B/op	      26 allocs/op
+BenchmarkFields_ToString-4   	  500000	      3417 ns/op	     368 B/op	      26 allocs/op
+BenchmarkFields_ToString-4   	  500000	      3401 ns/op	     368 B/op	      26 allocs/op
+BenchmarkFields_ToString-4   	  500000	      3549 ns/op	     368 B/op	      26 allocs/op
+BenchmarkFields_ToString-4   	  500000	      3450 ns/op	     368 B/op	      26 allocs/op
+BenchmarkFields_ToString-4   	  500000	      3467 ns/op	     368 B/op	      26 allocs/op
+BenchmarkFields_ToString-4   	  500000	      3438 ns/op	     368 B/op	      26 allocs/op
+BenchmarkFields_ToString-4   	  500000	      3442 ns/op	     368 B/op	      26 allocs/op
 PASS
-ok  	github.com/corestoreio/log	17.661s
+ok  	github.com/corestoreio/log	17.981s
