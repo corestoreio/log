@@ -67,7 +67,7 @@ func TestFields_ToString_Error(t *testing.T) {
 	assert.Contains(t, str, "[log] AddTo.TextMarshaler\n")
 }
 
-func TestFields_Add(t *testing.T) {
+func TestFields_AddTo(t *testing.T) {
 	f := Fields{String("a", "b"), Int("c", 3)}.Add()
 	assert.Exactly(t, typeFields, f.fieldType)
 	assert.Exactly(t, Fields{String("a", "b"), Int("c", 3)}, f.obj.(Fields))
@@ -377,4 +377,21 @@ func TestField_Nest_Error(t *testing.T) {
 	}
 	assert.Contains(t, buf.String(), `nest1: "1" error: NestError. Smoke Alarm on ;-)`)
 	assert.Contains(t, buf.String(), `[log] AddTo.TextMarshaler`)
+}
+
+var benchmarkFields_ToString string
+
+func BenchmarkFields_ToString(b *testing.B) {
+	anError := errors.New("I'm an error")
+	fs := Fields{
+		String("a", "b"), Int("c", 3),
+		Int64("d", 33), Uint("f", 9), Bool("true", true),
+		Err(anError),
+		Ints("multiple_ints", 1, 2, 3, 4, 5, 6, 7, 8, 9),
+	}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		benchmarkFields_ToString = fs.ToString("Convert to string")
+	}
 }
