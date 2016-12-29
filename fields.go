@@ -352,7 +352,8 @@ func JSON(key string, val jsonMarshaler) Field {
 }
 
 // Time constructs a Field with the given key and value. It represents a
-// time.Time as nanoseconds since epoch.
+// time.Time as nanoseconds since epoch. If you need a human formatted time, use
+// the Stringer function.
 func Time(key string, val time.Time) Field {
 	return Int64(key, val.UnixNano())
 }
@@ -361,6 +362,17 @@ func Time(key string, val time.Time) Field {
 // durations as an integer number of nanoseconds.
 func Duration(key string, val time.Duration) Field {
 	return field{key: key, fieldType: typeInt64, int64: val.Nanoseconds()}
+}
+
+// UnixNanoHuman converts a unix nano value using the format string
+//	"2006-01-02 15:04:05.999999999 -0700 MST"
+func UnixNanoHuman(key string, val int64) Field {
+	secs := val / int64(time.Second)
+	var nsecs int64
+	if secs > 0 {
+		nsecs = val % secs
+	}
+	return String(key, time.Unix(secs, nsecs).String())
 }
 
 // Err constructs a Field that stores err under the key log.ErrorKeyName. Prints

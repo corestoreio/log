@@ -299,6 +299,21 @@ func TestField_Time(t *testing.T) {
 	assert.Exactly(t, testKey, f.key)
 }
 
+func TestField_UnixNanoHuman(t *testing.T) {
+	un := time.Unix(1234567890, 10).In(time.UTC).UnixNano()
+	f := UnixNanoHuman(testKey, un).make()
+	assert.Exactly(t, typeString, f.fieldType)
+	assert.Exactly(t, `2009-02-14 00:31:30.00000001 +0100 CET`, f.string)
+	assert.Exactly(t, testKey, f.key)
+}
+
+func TestField_UnixNanoHuman_Zero(t *testing.T) {
+	f := UnixNanoHuman(testKey, 0).make()
+	assert.Exactly(t, typeString, f.fieldType)
+	assert.Exactly(t, `1970-01-01 01:00:00 +0100 CET`, f.string)
+	assert.Exactly(t, testKey, f.key)
+}
+
 func TestField_Duration(t *testing.T) {
 	now := time.Hour * 2
 	f := Duration(testKey, now).make()
