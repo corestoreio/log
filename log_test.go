@@ -53,14 +53,22 @@ func testWhenDone(lvl int) func(*testing.T) {
 		wg.Wait()
 
 		if lvl == logw.LevelDebug {
-			assert.Contains(t, buf.String(), `WhenDoneDebug key1: 123 `+log.KeyNameDuration+`: 25`)
+			assert.Contains(t, buf.String(), `WhenDoneDebug`)
+			assert.Contains(t, buf.String(), `key1: 123`)
+			assert.Contains(t, buf.String(), log.KeyNameDuration+`: 25`)
 		} else {
-			assert.NotContains(t, buf.String(), `WhenDoneDebug key1: 123 `+log.KeyNameDuration+`: 25`)
+			assert.NotContains(t, buf.String(), `WhenDoneDebug`)
+			assert.NotContains(t, buf.String(), `key1: 123`)
+			//assert.NotContains(t, buf.String(), log.KeyNameDuration+`: 25`)
 		}
 		if lvl >= logw.LevelInfo {
-			assert.Contains(t, buf.String(), `WhenDoneInfo key2: 321 `+log.KeyNameDuration+`: 25`)
+			assert.Contains(t, buf.String(), `WhenDoneInfo`)
+			assert.Contains(t, buf.String(), `key2: 321`)
+			assert.Contains(t, buf.String(), log.KeyNameDuration+`: 25`)
 		} else {
-			assert.NotContains(t, buf.String(), `WhenDoneInfo key2: 321 `+log.KeyNameDuration+`: 25`)
+			assert.NotContains(t, buf.String(), `WhenDoneInfo`)
+			assert.NotContains(t, buf.String(), `key2: 321`)
+			assert.NotContains(t, buf.String(), log.KeyNameDuration+`: 25`)
 		}
 	}
 }

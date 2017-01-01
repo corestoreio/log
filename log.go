@@ -16,9 +16,9 @@ package log
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/corestoreio/errors"
+	"github.com/gavv/monotime"
 )
 
 // KeyNameError whenever an error occurs during marshaling this value defines
@@ -149,16 +149,17 @@ type Deferred struct {
 	Debug func(msg string, fields ...Field)
 }
 
-// WhenDone returns a Logger which tracks the duration
+// WhenDone returns a Logger which tracks the duration in monotonic time.
 func WhenDone(l Logger) Deferred {
 	// @see http://play.golang.org/p/K53LV16F9e from @francesc
-	start := time.Now()
+	// TODO(CyS) refactor once https://github.com/golang/go/issues/12914 as been implemented and Go 1.9 is out.
+	start := monotime.Now()
 	return Deferred{
 		Info: func(msg string, fields ...Field) {
-			l.Info(msg, append(fields, Duration(KeyNameDuration, time.Since(start)))...)
+			l.Info(msg, Duration(KeyNameDuration, monotime.Since(start)), Fields(fields))
 		},
 		Debug: func(msg string, fields ...Field) {
-			l.Debug(msg, append(fields, Duration(KeyNameDuration, time.Since(start)))...)
+			l.Debug(msg, Duration(KeyNameDuration, monotime.Since(start)), Fields(fields))
 		},
 	}
 }
