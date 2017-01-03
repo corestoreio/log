@@ -26,6 +26,7 @@ import (
 var _ io.Writer = (*log.MutexBuffer)(nil)
 
 func TestMutexBuffer(t *testing.T) {
+	t.Parallel()
 
 	mb := &log.MutexBuffer{}
 	var wg sync.WaitGroup
@@ -49,4 +50,20 @@ func TestMutexBuffer(t *testing.T) {
 	wg.Wait()
 	assert.Contains(t, mb.String(), "W1")
 	assert.Contains(t, mb.String(), "W2")
+	assert.Exactly(t, 4, mb.Len())
+}
+
+func TestMutexBuffer_Read(t *testing.T) {
+	t.Parallel()
+
+	mb := &log.MutexBuffer{}
+	if _, err := mb.Write([]byte(`Hello Gophers`)); err != nil {
+		t.Fatal(err)
+	}
+	var p [20]byte
+	n, err := mb.Read(p[:])
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Exactly(t, `Hello Gophers`, string(p[:n]))
 }

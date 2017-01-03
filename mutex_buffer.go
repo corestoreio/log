@@ -16,6 +16,7 @@ package log
 
 import (
 	"bytes"
+	"io"
 	"sync"
 )
 
@@ -29,8 +30,9 @@ type MutexBuffer struct {
 // Write writes to a buffer with an acquired lock
 func (pl *MutexBuffer) Write(p []byte) (n int, err error) {
 	pl.mu.Lock()
-	defer pl.mu.Unlock()
-	return pl.buf.Write(p)
+	n, err = pl.buf.Write(p)
+	pl.mu.Unlock()
+	return
 }
 
 // String reads from the buffer and returns a string.
@@ -52,4 +54,26 @@ func (pl *MutexBuffer) Reset() {
 	pl.mu.Lock()
 	pl.buf.Reset()
 	pl.mu.Unlock()
+}
+
+// Reset truncates the buffer to zero length
+func (pl *MutexBuffer) Len() (l int) {
+	// locks for ever
+	//pl.mu.Lock()
+	//defer pl.mu.Unlock()
+	return pl.buf.Len()
+}
+
+// ReadFrom @see io.ReaderFrom description
+func (pl *MutexBuffer) ReadFrom(r io.Reader) (n int64, err error) {
+	pl.mu.Lock()
+	defer pl.mu.Unlock()
+	return pl.buf.ReadFrom(r)
+}
+
+// Read @see io.Reader description
+func (pl *MutexBuffer) Read(p []byte) (n int, err error) {
+	pl.mu.Lock()
+	defer pl.mu.Unlock()
+	return pl.buf.Read(p)
 }
