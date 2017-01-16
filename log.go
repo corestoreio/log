@@ -96,6 +96,9 @@ func (wt WriteTypes) AddInt(key string, value int) {
 func (wt WriteTypes) AddInt64(key string, value int64) {
 	wt.stdSetKV(key, value)
 }
+func (wt WriteTypes) AddUint64(key string, value uint64) {
+	wt.stdSetKV(key, value)
+}
 func (wt WriteTypes) AddMarshaler(key string, value Marshaler) error {
 	if err := value.MarshalLog(wt); err != nil {
 		if wt.Separator == "" {

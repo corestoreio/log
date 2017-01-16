@@ -138,15 +138,15 @@ func TestField_Int64s(t *testing.T) {
 
 func TestField_Uint(t *testing.T) {
 	f := Uint(testKey, math.MaxUint32).make()
-	assert.Exactly(t, typeInt, f.fieldType)
-	assert.Exactly(t, int64(math.MaxUint32), f.int64)
+	assert.Exactly(t, typeUint64, f.fieldType)
+	assert.Exactly(t, uint64(math.MaxUint32), f.uint64)
 	assert.Exactly(t, testKey, f.key)
 }
 
 func TestField_Uint64(t *testing.T) {
 	f := Uint64(testKey, math.MaxUint64).make()
-	assert.Exactly(t, typeInt64, f.fieldType)
-	assert.Exactly(t, int64(math.MaxInt64), f.int64)
+	assert.Exactly(t, typeUint64, f.fieldType)
+	assert.Exactly(t, uint64(math.MaxUint64), f.uint64)
 	assert.Exactly(t, testKey, f.key)
 }
 

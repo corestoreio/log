@@ -36,7 +36,6 @@ package log
 
 import (
 	"fmt"
-	"math"
 	"strconv"
 	"time"
 
@@ -52,6 +51,7 @@ const (
 	typeInts
 	typeInt64
 	typeInt64s
+	typeUint64
 	typeFloat64
 	typeString
 	typeStrings
@@ -92,6 +92,7 @@ type KeyValuer interface {
 	AddFloat64(string, float64)
 	AddInt(string, int)
 	AddInt64(string, int64)
+	AddUint64(string, uint64)
 	AddMarshaler(string, Marshaler) error
 	// AddObject uses reflection to serialize arbitrary objects, so it's slow and
 	// allocation-heavy. Consider implementing the LogMarshaler interface instead.
@@ -166,6 +167,7 @@ type field struct {
 	// fieldType specifies the used type. If 0 this struct is empty
 	fieldType
 	int64
+	uint64
 	float64
 	string
 	strFn func(AddStringFn) error
@@ -198,6 +200,8 @@ func (f field) AddTo(kv KeyValuer) error {
 		putBuffer(buf)
 	case typeInt64:
 		kv.AddInt64(f.key, f.int64)
+	case typeUint64:
+		kv.AddUint64(f.key, f.uint64)
 	case typeInt64s:
 		buf := getBuffer()
 		vals := f.obj.([]int64)
@@ -282,16 +286,12 @@ func Int64s(key string, vals ...int64) Field {
 
 // Uint constructs a Field with the given key and value.
 func Uint(key string, val uint) Field {
-	return field{key: key, fieldType: typeInt, int64: int64(val)}
+	return field{key: key, fieldType: typeUint64, uint64: uint64(val)}
 }
 
 // Uint64 constructs a Field with the given key and value.
-// If val is bigger than math.MaxInt64 then val gets set to math.MaxInt64.
 func Uint64(key string, val uint64) Field {
-	if val > math.MaxInt64 {
-		val = math.MaxInt64
-	}
-	return field{key: key, fieldType: typeInt64, int64: int64(val)}
+	return field{key: key, fieldType: typeUint64, uint64: val}
 }
 
 // String constructs a Field with the given key and value.
