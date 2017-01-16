@@ -114,6 +114,9 @@ func (se *log15FieldWrap) AddInt(k string, v int) {
 func (se *log15FieldWrap) AddInt64(k string, v int64) {
 	se.append(k, v)
 }
+func (se *log15FieldWrap) AddUint64(k string, v uint64) {
+	se.append(k, v)
+}
 func (se *log15FieldWrap) AddMarshaler(k string, v log.Marshaler) error {
 	if err := v.MarshalLog(se); err != nil {
 		se.AddString(log.KeyNameError, fmt.Sprintf("%+v", err))

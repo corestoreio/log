@@ -77,12 +77,16 @@ type marshalMock struct {
 	float64
 	bool
 	error
+	int64
+	uint64
 }
 
 func (mm marshalMock) MarshalLog(kv log.KeyValuer) error {
 	kv.AddBool("kvbool", mm.bool)
 	kv.AddString("kvstring", mm.string)
 	kv.AddFloat64("kvfloat64", mm.float64)
+	kv.AddInt64("kvint64", mm.int64)
+	kv.AddUint64("kvuint64", mm.uint64)
 	kv.Nest("startNest", func(kv2 log.KeyValuer) error {
 		kv2.AddInt64("nestedInt64", 4711)
 		return nil
@@ -100,13 +104,16 @@ func TestAddMarshaler(t *testing.T) {
 		string:  "s1",
 		float64: math.Ln2,
 		bool:    true,
+		int64:   math.MaxInt32,
+		uint64:  uint64(math.MaxUint32),
 	}))
 	assert.Contains(t, buf.String(), `"anObject":42`)
-	assert.Contains(t, buf.String(), `"e":2.7182`)
 	assert.Contains(t, buf.String(), `"kvbool":"true"`)
 	assert.Contains(t, buf.String(), `"kvfloat64":0.6931471805599453`)
 	assert.Contains(t, buf.String(), `"kvstring":"s1"`)
 	assert.Contains(t, buf.String(), `"nestedInt64":4711`)
+	assert.Contains(t, buf.String(), `"kvint64":2147483647`)
+	assert.Contains(t, buf.String(), `"kvuint64":4294967295`)
 }
 
 func TestAddMarshaler_Error(t *testing.T) {
@@ -117,5 +124,7 @@ func TestAddMarshaler_Error(t *testing.T) {
 		error: errors.New("Whooops"),
 	}))
 	assert.Contains(t, buf.String(), `"error":"Whooops\ngithub.com/corestoreio/log/log15w_test.TestAddMarshaler_Error`)
-	assert.Contains(t, buf.String(), `"kvbool":"false","kvfloat64":0,"kvstring":""`)
+	assert.Contains(t, buf.String(), `"kvbool":"false"`)
+	assert.Contains(t, buf.String(), `"kvfloat64":0`)
+	assert.Contains(t, buf.String(), `"kvstring":""`)
 }
