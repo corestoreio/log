@@ -396,7 +396,7 @@ func TestField_Nest_Error(t *testing.T) {
 	assert.Contains(t, buf.String(), `[log] AddTo.TextMarshaler`)
 }
 
-var benchmarkFields_ToString string
+var benchmarkFieldsToString string
 
 func BenchmarkFields_ToString(b *testing.B) {
 	anError := errors.New("I'm an error")
@@ -409,6 +409,6 @@ func BenchmarkFields_ToString(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		benchmarkFields_ToString = fs.ToString("Convert to string")
+		benchmarkFieldsToString = fs.ToString("Convert to string")
 	}
 }

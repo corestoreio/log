@@ -101,7 +101,7 @@ type KeyValuer interface {
 	Nest(string, func(KeyValuer) error) error
 }
 
-// AddStrFn same as KeyValuer.AddString to allow creating 3rd party log packages
+// AddStringFn same as KeyValuer.AddString to allow creating 3rd party log packages
 // which can log very different types for which we do not want to create a
 // Marshaler.
 type AddStringFn func(string, string)
