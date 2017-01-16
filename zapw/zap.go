@@ -16,6 +16,7 @@ package zapw
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/corestoreio/errors"
 	"github.com/corestoreio/log"
@@ -89,6 +90,11 @@ func (se *zapFieldWrap) AddInt(k string, v int) {
 }
 func (se *zapFieldWrap) AddInt64(k string, v int64) {
 	se.zf = append(se.zf, zap.Int64(k, v))
+}
+func (se *zapFieldWrap) AddUint64(k string, v uint64) {
+	// zap.Uint64 cannot be used as it has IMHO an architecture bug because the
+	// uint64 gets casted into an int64 and you loose data.
+	se.zf = append(se.zf, zap.String(k, strconv.FormatUint(v, 10)))
 }
 func (se *zapFieldWrap) AddMarshaler(k string, v log.Marshaler) error {
 	if err := v.MarshalLog(se); err != nil {

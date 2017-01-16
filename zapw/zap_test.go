@@ -43,10 +43,10 @@ func getZapWithLog(lvl zap.Level) string {
 	buf, l := getZap(lvl)
 
 	if l.IsDebug() {
-		l.Debug("log_15_debug", log.Err(errors.New("I'm an debug error")), log.Float64("pi", 3.14159), log.String("kDebug", "v1"), log.Duration("debugDur", time.Minute))
+		l.Debug("log_15_debug", log.Err(errors.New("I'm an debug error")), log.Float64("pi", 3.14159), log.Uint64("myDebugUint", math.MaxUint32), log.String("kDebug", "v1"), log.Duration("debugDur", time.Minute))
 	}
 	if l.IsInfo() {
-		l.Info("log_15_info", log.Err(errors.New("I'm an info error")), log.Float64("e", 2.7182), log.String("kInfo", "v1"), log.Duration("infoDur", time.Hour))
+		l.Info("log_15_info", log.Err(errors.New("I'm an info error")), log.Float64("e", 2.7182), log.Uint64("myInfoUint", math.MaxUint32), log.String("kInfo", "v1"), log.Duration("infoDur", time.Hour))
 	}
 	return buf.String()
 }
@@ -69,6 +69,7 @@ func TestNewJSON_Debug(t *testing.T) {
 	assert.Contains(t, out, `"error":"I'm an info error"`)
 	assert.Contains(t, out, `"kInfo":"v1"`)
 	assert.Contains(t, out, `"infoDur":3600000000`)
+	assert.Contains(t, out, `"myDebugUint":"4294967295"`)
 }
 
 func TestNewJSON_Info(t *testing.T) {
@@ -77,6 +78,8 @@ func TestNewJSON_Info(t *testing.T) {
 	assert.Contains(t, out, `"error":"I'm an info error"`)
 	assert.Contains(t, out, `"kInfo":"v1","infoDur":3600000000`)
 	assert.Contains(t, out, `"e":2.7182`)
+	assert.Contains(t, out, `"myInfoUint":"4294967295"`)
+	assert.NotContains(t, out, `"myDebugUint":"4294967295"`)
 }
 
 type marshalMock struct {
