@@ -37,30 +37,29 @@ type Wrap struct {
 
 // With creates a new inherited and shallow copied Logger with additional fields
 // added to the logging context.
-func (l *Wrap) With(fields ...log.Field) log.Logger {
-	l2 := new(Wrap)
-	*l2 = *l
+func (l Wrap) With(fields ...log.Field) log.Logger {
+	l2 := l
 	l2.Zap = l.Zap.With(doFieldWrap(fields...)...)
 	return l2
 }
 
 // Info outputs information for users of the app
-func (l *Wrap) Info(msg string, fields ...log.Field) {
+func (l Wrap) Info(msg string, fields ...log.Field) {
 	l.Zap.Info(msg, doFieldWrap(fields...)...)
 }
 
 // Debug outputs information for developers.
-func (l *Wrap) Debug(msg string, fields ...log.Field) {
+func (l Wrap) Debug(msg string, fields ...log.Field) {
 	l.Zap.Debug(msg, doFieldWrap(fields...)...)
 }
 
 // IsDebug returns true if Debug level is enabled
-func (l *Wrap) IsDebug() bool {
+func (l Wrap) IsDebug() bool {
 	return l.Level <= zap.DebugLevel
 }
 
 // IsInfo returns true if Info level is enabled
-func (l *Wrap) IsInfo() bool {
+func (l Wrap) IsInfo() bool {
 	return l.Level <= zap.InfoLevel
 }
 
