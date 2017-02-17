@@ -24,22 +24,36 @@ import (
 	"github.com/corestoreio/log"
 	"github.com/corestoreio/log/zapw"
 	"github.com/stretchr/testify/assert"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var _ log.Logger = (*zapw.Wrap)(nil)
 
-func getZap(lvl zap.Level) (*bytes.Buffer, log.Logger) {
+func getZap(lvl zapcore.Level) (*bytes.Buffer, log.Logger) {
 	buf := &bytes.Buffer{}
 	l := &zapw.Wrap{
 		Level: lvl,
-		Zap:   zap.New(zap.NewJSONEncoder(zap.NoTime()), lvl, zap.Output(zap.AddSync(buf)), zap.ErrorOutput(zap.AddSync(buf)), zap.Fields(zap.Int("answer", 42))),
+		Zap: zap.New(
+			zapcore.NewCore(
+				zapcore.NewJSONEncoder(zapcore.EncoderConfig{
+					MessageKey:    "msg",
+					LevelKey:      "level",
+					NameKey:       "name",
+					CallerKey:     "caller",
+					StacktraceKey: "stacktrace",
+					EncodeLevel:   zapcore.LowercaseLevelEncoder,
+				}),
+				zapcore.AddSync(buf),
+				lvl,
+			),
+			zap.Fields(zap.Int("answer", 42)),
+		),
 	}
-
 	return buf, l
 }
 
-func getZapWithLog(lvl zap.Level) string {
+func getZapWithLog(lvl zapcore.Level) string {
 	buf, l := getZap(lvl)
 
 	if l.IsDebug() {

@@ -20,7 +20,8 @@ import (
 
 	"github.com/corestoreio/errors"
 	"github.com/corestoreio/log"
-	"github.com/uber-go/zap"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Wrap creates a new zap Logger. Their options cannot be applied as an argument
@@ -31,8 +32,8 @@ import (
 //			Zap: zap.NewJSON(zap.Option ... )
 // 		}
 type Wrap struct {
-	zap.Level
-	Zap zap.Logger
+	zapcore.Level
+	Zap *zap.Logger
 }
 
 // With creates a new inherited and shallow copied Logger with additional fields
@@ -64,12 +65,12 @@ func (l Wrap) IsInfo() bool {
 }
 
 type zapFieldWrap struct {
-	zf []zap.Field
+	zf []zapcore.Field
 }
 
-func doFieldWrap(fs ...log.Field) []zap.Field {
+func doFieldWrap(fs ...log.Field) []zapcore.Field {
 	fw := &zapFieldWrap{
-		zf: make([]zap.Field, 0, len(fs)),
+		zf: make([]zapcore.Field, 0, len(fs)),
 	}
 
 	if err := log.Fields(fs).AddTo(fw); err != nil {
@@ -102,7 +103,7 @@ func (se *zapFieldWrap) AddMarshaler(k string, v log.Marshaler) error {
 	return nil
 }
 func (se *zapFieldWrap) AddObject(k string, v interface{}) {
-	se.zf = append(se.zf, zap.Object(k, v))
+	se.zf = append(se.zf, zap.Any(k, v))
 }
 func (se *zapFieldWrap) AddString(k string, v string) {
 	se.zf = append(se.zf, zap.String(k, v))
