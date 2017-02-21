@@ -52,7 +52,7 @@ func TestHTTPRequest_Race(t *testing.T) {
 					log.String("user_id", rec.Header().Get(cstesting.HeaderUserID)),
 					log.String("loop_cnt", rec.Header().Get(cstesting.HeaderLoopID)),
 					log.String("sleep_dur", rec.Header().Get(cstesting.HeaderSleep)),
-					loghttp.Request("myReq", r))
+					loghttp.Request("myReq", loghttp.ShallowCloneRequest(r)))
 			}
 		}),
 	)

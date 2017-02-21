@@ -23,12 +23,8 @@ import (
 )
 
 func addToHTTPRequest(key string, r *http.Request, dumpBody bool) func(log.AddStringFn) error {
-	// copy the request and do not store it in the closure to avoid race
-	// conditions (proof => see TestHTTPRequest_Race in sub package)
-	r2 := new(http.Request)
-	*r2 = *r
 	return func(addString log.AddStringFn) error {
-		b, err := httputil.DumpRequest(r2, dumpBody)
+		b, err := httputil.DumpRequest(r, dumpBody)
 		if err != nil {
 			return errors.Wrap(err, "[log] AddTo.HTTPRequest.DumpRequest")
 		}
@@ -38,7 +34,15 @@ func addToHTTPRequest(key string, r *http.Request, dumpBody bool) func(log.AddSt
 	}
 }
 
-// HTTPRequest transforms the request with the function httputil.DumpRequest(r,
+// ShallowCloneRequest convenient helper function to create a shallow clone of a
+// request object.
+func ShallowCloneRequest(r *http.Request) *http.Request {
+	r2 := new(http.Request)
+	*r2 = *r
+	return r2
+}
+
+// Request transforms the request with the function httputil.DumpRequest(r,
 // true) into a string. The body gets logged also. Not completely race condition
 // free because it depends on the Body io.ReadCloser implementation.
 //
@@ -49,22 +53,30 @@ func addToHTTPRequest(key string, r *http.Request, dumpBody bool) func(log.AddSt
 // case of header field names are lost. The order of values in multi-valued
 // headers is kept intact. HTTP/2 requests are dumped in HTTP/1.x form, not in
 // their original binary representations.
-func Request(key string, r *http.Request) log.Field {
-	return log.StringFn(key, addToHTTPRequest(key, r, true))
+//
+// `shallowCopiedR` must be a shallow copy of the original request object
+// otherwise you will see race condition when the different log levels are
+// enabled. You must find the correct spot where to clone the request object.
+func Request(key string, shallowCopiedR *http.Request) log.Field {
+	return log.StringFn(key, addToHTTPRequest(key, shallowCopiedR, true))
 }
 
-// HTTPRequestHeader transforms the request with the function
+// RequestHeader transforms the request with the function
 // httputil.DumpRequest(r, false) into a string. The body gets not logged and
 // hence it is race condition free.
-func RequestHeader(key string, r *http.Request) log.Field {
-	return log.StringFn(key, addToHTTPRequest(key, r, false))
+//
+// `shallowCopiedR` must be a shallow copy of the original request object
+// otherwise you will see race condition when the different log levels are
+// enabled. You must find the correct spot where to clone the request object.
+func RequestHeader(key string, shallowCopiedR *http.Request) log.Field {
+	return log.StringFn(key, addToHTTPRequest(key, shallowCopiedR, false))
 }
 
 // todo: add http.DumpRequestOut() with header+body and header only
 
 // todo: add ResponseHeader()
 
-// HTTPResponse transforms the response with the function
+// Response transforms the response with the function
 // httputil.DumpResponse(r, true) into a string. Same behaviour as
 // HTTPRequest(). The body gets logged also. Not completely race condition free
 // because it depends on the Body io.ReadCloser implementation.
