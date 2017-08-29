@@ -5,7 +5,7 @@ the idea of uber-go/zap.
 
 It also provides wrapper to favorite log libraries like log15, standard lib log and uber-go/zap.
 
-Min. Go Version: 1.8
+Min. Go Version: 1.9
 
 [Read the package documentation for more information](https://godoc.org/github.com/corestoreio/log).
 

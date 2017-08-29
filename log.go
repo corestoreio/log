@@ -16,10 +16,14 @@ package log
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/corestoreio/errors"
-	"github.com/gavv/monotime"
 )
+
+// Now returns the current time including a monotonic time part. This variable
+// can be changed for testing purposes.
+var Now = time.Now
 
 // KeyNameError whenever an error occurs during marshaling this value defines
 // the official key name in the log stream.
@@ -152,17 +156,16 @@ type Deferred struct {
 	Debug func(msg string, fields ...Field)
 }
 
-// WhenDone returns a Logger which tracks the duration in monotonic time.
+// WhenDone returns a Logger which tracks the duration.
 func WhenDone(l Logger) Deferred {
 	// @see http://play.golang.org/p/K53LV16F9e from @francesc
-	// TODO(CyS) refactor once https://github.com/golang/go/issues/12914 as been implemented and Go 1.9 is out.
-	start := monotime.Now()
+	start := Now()
 	return Deferred{
 		Info: func(msg string, fields ...Field) {
-			l.Info(msg, Duration(KeyNameDuration, monotime.Since(start)), Fields(fields))
+			l.Info(msg, Duration(KeyNameDuration, Now().Sub(start)), Fields(fields))
 		},
 		Debug: func(msg string, fields ...Field) {
-			l.Debug(msg, Duration(KeyNameDuration, monotime.Since(start)), Fields(fields))
+			l.Debug(msg, Duration(KeyNameDuration, Now().Sub(start)), Fields(fields))
 		},
 	}
 }
