@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/corestoreio/csfw/util/cstesting"
+	"github.com/corestoreio/pkg/util/cstesting"
 	"github.com/corestoreio/log"
 	loghttp "github.com/corestoreio/log/http"
 	"github.com/corestoreio/log/logw"

@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/corestoreio/csfw/storage/text"
+	"github.com/corestoreio/pkg/storage/text"
 	"github.com/stretchr/testify/assert"
 )
 
