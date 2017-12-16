@@ -243,7 +243,7 @@ func (f field) AddTo(kv KeyValuer) error {
 			}
 		}
 	default:
-		return errors.NewFatalf("[log] Unknown field type found: %v", f)
+		return errors.NotSupported.Newf("[log] Field type not supported: %v", f)
 	}
 	return nil
 }
