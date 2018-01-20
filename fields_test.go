@@ -48,13 +48,15 @@ var _ Field = (*Fields)(nil)
 const testKey = "MyTestKey"
 
 func TestFields_ToString(t *testing.T) {
+	xChan := make(chan uint64)
 	var fs = Fields{
 		String("k1", "v1"),
 		Int("k2", 2),
 		Float64("k3", 3.14159),
+		ObjectTypeOf("k4", xChan),
 	}
 	str := fs.ToString("fieldsKey")
-	assert.Exactly(t, "fieldsKey k1: \"v1\" k2: 2 k3: 3.14159\n", str)
+	assert.Exactly(t, "fieldsKey k1: \"v1\" k2: 2 k3: 3.14159 k4: \"chan uint64\"\n", str)
 
 }
 
@@ -360,6 +362,14 @@ func TestField_Object(t *testing.T) {
 	f := Object(testKey, req).make()
 	assert.Exactly(t, typeObject, f.fieldType)
 	assert.Exactly(t, req, f.obj)
+	assert.Exactly(t, testKey, f.key)
+}
+
+func TestField_ObjectTypeOf(t *testing.T) {
+	i := 99
+	f := ObjectTypeOf(testKey, i).make()
+	assert.Exactly(t, typeObjectTypeOf, f.fieldType)
+	assert.Exactly(t, i, f.obj)
 	assert.Exactly(t, testKey, f.key)
 }
 

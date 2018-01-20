@@ -59,6 +59,7 @@ const (
 	typeStringFn
 	typeGoStringer
 	typeObject
+	typeObjectTypeOf
 	typeMarshaler
 	typeFields
 )
@@ -232,6 +233,8 @@ func (f field) AddTo(kv KeyValuer) error {
 		kv.AddString(f.key, f.obj.(fmt.GoStringer).GoString())
 	case typeObject:
 		kv.AddObject(f.key, f.obj)
+	case typeObjectTypeOf:
+		kv.AddString(f.key, fmt.Sprintf("%T", f.obj))
 	case typeMarshaler:
 		return kv.AddMarshaler(f.key, f.obj.(Marshaler))
 	case typeStringFn:
@@ -401,6 +404,12 @@ func ErrWithKey(key string, err error) Field {
 // includes the error message in the final log output.
 func Object(key string, val interface{}) Field {
 	return field{key: key, fieldType: typeObject, obj: val}
+}
+
+// ObjectTypeOf logs the type of the `val` interface. Same as %T in fmt.Printf or
+// reflect.TypeOf.
+func ObjectTypeOf(key string, val interface{}) Field {
+	return field{key: key, fieldType: typeObjectTypeOf, obj: val}
 }
 
 // Marshal constructs a field with the given key and log.Marshaler. It
