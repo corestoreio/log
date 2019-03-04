@@ -27,10 +27,23 @@ type MutexBuffer struct {
 	buf bytes.Buffer
 }
 
-// Write writes to a buffer with an acquired lock
+// Write appends the contents of p to the buffer with an acquired lock, growing
+// the buffer as needed. The return value n is the length of p; err is always
+// nil. If the buffer becomes too large, Write will panic with ErrTooLarge.
 func (pl *MutexBuffer) Write(p []byte) (n int, err error) {
 	pl.mu.Lock()
 	n, err = pl.buf.Write(p)
+	pl.mu.Unlock()
+	return
+}
+
+// WriteTo writes data to w with an acquired lock until the buffer is drained or
+// an error occurs. The return value n is the number of bytes written; it always
+// fits into an int, but it is int64 to match the io.WriterTo interface. Any
+// error encountered during the write is also returned.
+func (pl *MutexBuffer) WriteTo(w io.Writer) (n int64, err error) {
+	pl.mu.Lock()
+	n, err = pl.buf.WriteTo(w)
 	pl.mu.Unlock()
 	return
 }
