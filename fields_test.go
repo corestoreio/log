@@ -24,8 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/corestoreio/pkg/storage/text"
-	"github.com/stretchr/testify/assert"
+	"github.com/corestoreio/pkg/util/assert"
 )
 
 type iFaceCheck struct{}
@@ -241,9 +240,15 @@ func TestField_Marshaler(t *testing.T) {
 	assert.Exactly(t, " MarshalLogKey: \"MarshalerMarshaler\"", buf.String())
 }
 
+type textMar string
+
+func (tm textMar) MarshalText() (text []byte, err error) {
+	return []byte(tm), nil
+}
+
 func TestField_Text(t *testing.T) {
 	const data = `35. “My universe is my eyes and my ears. Anything else is hearsay.” Douglas Adams`
-	f := Text(testKey, text.Chars(data)).make()
+	f := Text(testKey, textMar(data)).make()
 	assert.Exactly(t, typeStringFn, f.fieldType)
 	assert.Empty(t, f.string)
 	assert.Exactly(t, testKey, f.key)

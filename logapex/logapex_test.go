@@ -12,63 +12,62 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package log15w_test
+package logapex_test
 
 import (
 	"bytes"
 	"math"
 	"testing"
 
+	apx "github.com/apex/log"
+	"github.com/apex/log/handlers/json"
 	"github.com/corestoreio/errors"
 	"github.com/corestoreio/log"
-	"github.com/corestoreio/log/log15w"
+	"github.com/corestoreio/log/logapex"
 	"github.com/corestoreio/pkg/util/assert"
-	"github.com/inconshreveable/log15"
 )
 
-var _ log.Logger = (*log15w.Wrap)(nil)
+var _ log.Logger = (*logapex.Wrap)(nil)
 
-func getLog15(lvl log15.Lvl) string {
-	buf := &bytes.Buffer{}
-	l := log15w.New(lvl, log15.StreamHandler(buf, log15.JsonFormat()), "Hello", "Gophers")
+func getLogger(lvl apx.Level) (*bytes.Buffer, log.Logger) {
+	buf := new(bytes.Buffer)
+	h := json.New(buf)
+	lapx := &apx.Logger{
+		Handler: h,
+		Level:   lvl,
+	}
+	return buf, logapex.New(lvl, lapx, log.String("RandField", "rand_value"))
+}
+
+func getLogApx(lvl apx.Level) string {
+	buf, l := getLogger(lvl)
 
 	if l.IsDebug() {
-		l.Debug("log_15_debug", log.Err(errors.New("I'm a debug error")), log.Float64("pi", 3.14159))
+		l.Debug("log_apx_debug", log.Err(errors.New("I'm a debug error")), log.Float64("pi", 3.14159))
 	}
 	if l.IsInfo() {
-		l.Info("log_15_info", log.Err(errors.New("I'm an info error")), log.Float64("e", 2.7182))
+		l.Info("log_apx_info", log.Err(errors.New("I'm an info error")), log.Float64("e", 2.7182))
 	}
 	return buf.String()
 }
 
-func TestLog15_With(t *testing.T) {
-	buf := &bytes.Buffer{}
-	l := log15w.New(log15.LvlDebug, log15.StreamHandler(buf, log15.JsonFormat()), "Hello", "Gophers")
-	l2 := l.With(log.String("child", "c1"))
-	l2.Info("Child2", log.String("child3", "c3"))
-	// Flaky test because internal the logger stores entries in a map.
-	assert.Contains(t, buf.String(), `"child":"c1","child3":"c3"`)
-}
-
-func TestNewLog15_Debug(t *testing.T) {
-	out := getLog15(log15.LvlDebug)
+func TestNewApex_Debug(t *testing.T) {
+	out := getLogApx(apx.DebugLevel)
 	assert.Contains(t, out, `"error":"I'm a debug error"`)
-	assert.Contains(t, out, `"Hello":"Gophers"`)
-	assert.Contains(t, out, `"lvl":"dbug"`)
-	assert.Contains(t, out, `"msg":"log_15_debug"`)
+	assert.Contains(t, out, `"RandField":"rand_value"`)
+	assert.Contains(t, out, `"level":"debug"`)
+	assert.Contains(t, out, `"message":"log_apx_debug"`)
 	assert.Contains(t, out, `"pi":3.14159`)
 	assert.Contains(t, out, `"error":"I'm an info error"`)
-	assert.Contains(t, out, `"Hello":"Gophers"`)
-	assert.Contains(t, out, `"lvl":"info"`)
-	assert.Contains(t, out, `"msg":"log_15_info"`)
+	assert.Contains(t, out, `"level":"info"`)
+	assert.Contains(t, out, `"message":"log_apx_info"`)
 }
 
-func TestNewLog15_Info(t *testing.T) {
-	out := getLog15(log15.LvlInfo)
+func TestNewApex_Info(t *testing.T) {
+	out := getLogApx(apx.InfoLevel)
 	assert.NotContains(t, out, `{"Hello":"Gophers","error":"I'm an debug error","lvl":"dbug"`)
 	assert.Contains(t, out, `"error":"I'm an info error"`)
-	assert.Contains(t, out, `"Hello":"Gophers"`)
-	assert.Contains(t, out, `"lvl":"info"`)
+	assert.Contains(t, out, `"level":"info"`)
 	assert.Contains(t, out, `"e":2.7182`)
 }
 
@@ -95,9 +94,7 @@ func (mm marshalMock) MarshalLog(kv log.KeyValuer) error {
 }
 
 func TestAddMarshaler(t *testing.T) {
-	buf := &bytes.Buffer{}
-	l := log15w.New(log15.LvlDebug, log15.StreamHandler(buf, log15.JsonFormat()), "Hello", "Gophers")
-
+	buf, l := getLogger(apx.DebugLevel)
 	l.Debug("log_15_debug", log.Err(errors.New("I'm an debug error")), log.Float64("pi", 3.14159))
 
 	l.Debug("log_15_marshalling", log.Object("anObject", 42), log.Marshal("marshalLogMock", marshalMock{
@@ -117,13 +114,12 @@ func TestAddMarshaler(t *testing.T) {
 }
 
 func TestAddMarshaler_Error(t *testing.T) {
-	buf := &bytes.Buffer{}
-	l := log15w.New(log15.LvlDebug, log15.StreamHandler(buf, log15.JsonFormat()), "Hello", "Gophers")
+	buf, l := getLogger(apx.DebugLevel)
 
 	l.Debug("marshalling", log.Marshal("marshalLogMock", marshalMock{
 		error: errors.New("Whooops"),
 	}))
-	assert.Contains(t, buf.String(), `"error":"Whooops\ngithub.com/corestoreio/log/log15w_test.TestAddMarshaler_Error`)
+	assert.Contains(t, buf.String(), `"error":"Whooops\ngithub.com/corestoreio/log/logapex_test.TestAddMarshaler_Error`)
 	assert.Contains(t, buf.String(), `"kvbool":false`)
 	assert.Contains(t, buf.String(), `"kvfloat64":0`)
 	assert.Contains(t, buf.String(), `"kvstring":""`)

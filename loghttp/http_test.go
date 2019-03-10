@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package http_test
+package loghttp_test
 
 import (
 	"bytes"
@@ -25,8 +25,8 @@ import (
 
 	"github.com/corestoreio/errors"
 	"github.com/corestoreio/log"
-	loghttp "github.com/corestoreio/log/http"
-	"github.com/stretchr/testify/assert"
+	"github.com/corestoreio/log/loghttp"
+	"github.com/corestoreio/pkg/util/assert"
 	"github.com/tdewolff/buffer"
 )
 

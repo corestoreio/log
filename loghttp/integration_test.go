@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package http_test
+package loghttp_test
 
 import (
 	"net/http"
@@ -21,10 +21,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/corestoreio/pkg/util/cstesting"
 	"github.com/corestoreio/log"
-	loghttp "github.com/corestoreio/log/http"
+	"github.com/corestoreio/log/loghttp"
 	"github.com/corestoreio/log/logw"
+	"github.com/corestoreio/pkg/util/cstesting"
 )
 
 func TestHTTPRequest_Race(t *testing.T) {

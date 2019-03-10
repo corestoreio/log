@@ -12,32 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package log15w
+package logapex
 
 import (
 	"fmt"
-	"sync"
 
+	apx "github.com/apex/log"
 	"github.com/corestoreio/errors"
 	"github.com/corestoreio/log"
-	"github.com/inconshreveable/log15"
 )
 
 type Wrap struct {
-	level  log15.Lvl
-	logger log15.Logger
+	level apx.Level
+	wrap  *apx.Logger
 	// ctx is only set when we act as a child logger
 	ctx log.Fields
 }
 
-// New creates a new https://godoc.org/github.com/inconshreveable/log15 logger.
-func New(lvl log15.Lvl, h log15.Handler, ctx ...interface{}) *Wrap {
-	l := &Wrap{
-		level:  lvl,
-		logger: log15.New(ctx...),
+// New creates a new https://godoc.org/github.com/apex/log logger.
+func New(lvl apx.Level, l *apx.Logger, fields ...log.Field) *Wrap {
+	return &Wrap{
+		level: lvl,
+		wrap:  l,
+		ctx:   fields,
 	}
-	l.logger.SetHandler(h)
-	return l
 }
 
 // With creates a new inherited and shallow copied Logger with additional fields
@@ -51,37 +49,29 @@ func (l *Wrap) With(fields ...log.Field) log.Logger {
 
 // Info outputs information for users of the app
 func (l *Wrap) Info(msg string, fields ...log.Field) {
-	l.logger.Info(msg, doLog15FieldWrap(l.ctx, fields...)...)
+	l.wrap.WithFields(wrapFields(l.ctx, fields...)).Info(msg)
 }
 
 // Debug outputs information for developers.
 func (l *Wrap) Debug(msg string, fields ...log.Field) {
-	l.logger.Debug(msg, doLog15FieldWrap(l.ctx, fields...)...)
+	l.wrap.WithFields(wrapFields(l.ctx, fields...)).Debug(msg)
 }
 
 // IsDebug returns true if Debug level is enabled
 func (l *Wrap) IsDebug() bool {
-	return l.level >= log15.LvlDebug
+	return l.level <= apx.DebugLevel
 }
 
 // IsInfo returns true if Info level is enabled
 func (l *Wrap) IsInfo() bool {
-	return l.level >= log15.LvlInfo
+	return l.level <= apx.InfoLevel
 }
 
-var log15IFSlicePool = &sync.Pool{
-	New: func() interface{} {
-		return &log15FieldWrap{
-			ifaces: make([]interface{}, 0, 12), // just guessing not more than 12 args / 6 Fields
-		}
-	},
+type fieldWrap struct {
+	apx apx.Fields
 }
 
-type log15FieldWrap struct {
-	ifaces []interface{}
-}
-
-func doLog15FieldWrap(ctx log.Fields, fs ...log.Field) []interface{} {
+func wrapFields(ctx log.Fields, fs ...log.Field) apx.Fields {
 	if ctxl := len(ctx); ctxl > 0 {
 		all := make(log.Fields, 0, ctxl+len(fs))
 		all = append(all, ctx...)
@@ -89,48 +79,45 @@ func doLog15FieldWrap(ctx log.Fields, fs ...log.Field) []interface{} {
 		fs = all
 	}
 
-	fw := log15IFSlicePool.Get().(*log15FieldWrap)
-	defer log15IFSlicePool.Put(fw)
+	fw := &fieldWrap{
+		apx: apx.Fields{},
+	}
 
 	if err := log.Fields(fs).AddTo(fw); err != nil {
 		fw.AddString(log.KeyNameError, fmt.Sprintf("%+v", err))
 	}
-	return fw.ifaces
+	return fw.apx
 }
 
-func (se *log15FieldWrap) append(key string, val interface{}) {
-	se.ifaces = append(se.ifaces, key, val)
+func (se *fieldWrap) AddBool(k string, v bool) {
+	se.apx[k] = v
 }
-
-func (se *log15FieldWrap) AddBool(k string, v bool) {
-	se.append(k, v)
+func (se *fieldWrap) AddFloat64(k string, v float64) {
+	se.apx[k] = v
 }
-func (se *log15FieldWrap) AddFloat64(k string, v float64) {
-	se.append(k, v)
+func (se *fieldWrap) AddInt(k string, v int) {
+	se.apx[k] = v
 }
-func (se *log15FieldWrap) AddInt(k string, v int) {
-	se.append(k, v)
+func (se *fieldWrap) AddInt64(k string, v int64) {
+	se.apx[k] = v
 }
-func (se *log15FieldWrap) AddInt64(k string, v int64) {
-	se.append(k, v)
+func (se *fieldWrap) AddUint64(k string, v uint64) {
+	se.apx[k] = v
 }
-func (se *log15FieldWrap) AddUint64(k string, v uint64) {
-	se.append(k, v)
-}
-func (se *log15FieldWrap) AddMarshaler(k string, v log.Marshaler) error {
+func (se *fieldWrap) AddMarshaler(k string, v log.Marshaler) error {
 	if err := v.MarshalLog(se); err != nil {
 		se.AddString(log.KeyNameError, fmt.Sprintf("%+v", err))
 	}
 	return nil
 }
-func (se *log15FieldWrap) AddObject(k string, v interface{}) {
-	se.append(k, v)
+func (se *fieldWrap) AddObject(k string, v interface{}) {
+	se.apx[k] = v
 }
-func (se *log15FieldWrap) AddString(k string, v string) {
-	se.append(k, v)
+func (se *fieldWrap) AddString(k string, v string) {
+	se.apx[k] = v
 }
 
-func (se *log15FieldWrap) Nest(key string, f func(log.KeyValuer) error) error {
-	se.append(key, "nest")
+func (se *fieldWrap) Nest(key string, f func(log.KeyValuer) error) error {
+	se.apx[key] = "nest"
 	return errors.WithStack(f(se))
 }

@@ -12,7 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package http creates log fields for http Requests and Responses.
-//
-// Import into your code as loghttp to avoid conflicts.
-package http
+// Package loghttp creates log fields for http Requests and Responses.
+package loghttp

@@ -13,4 +13,12 @@
 // limitations under the License.
 
 // Package logapex provides a wrapper for github.com/apex/log TODO
+//
+// Apex provides Handlers to: cli – human-friendly CLI output, discard –
+// discards all logs, es – Elasticsearch handler, graylog – Graylog handler,
+// json – JSON output handler, kinesis – AWS Kinesis handler, level – level
+// filter handler, logfmt – logfmt plain-text formatter, memory – in-memory
+// handler for tests, multi – fan-out to multiple handlers, papertrail –
+// Papertrail handler, text – human-friendly colored output and delta – outputs
+// the delta between log calls and spinner
 package logapex

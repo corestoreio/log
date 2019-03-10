@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/corestoreio/log"
-	"github.com/stretchr/testify/assert"
+	"github.com/corestoreio/pkg/util/assert"
 )
 
 var _ io.Writer = (*log.MutexBuffer)(nil)
