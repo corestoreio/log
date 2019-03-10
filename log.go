@@ -85,7 +85,13 @@ func (wt WriteTypes) stdSetKV(key string, value interface{}) {
 		wt.AssignmentChar = AssignmentChar
 	}
 	_, _ = wt.W.WriteString(wt.AssignmentChar)
-	_, _ = wt.W.WriteString(fmt.Sprintf("%#v", value)) // can be refactored into the different functions
+
+	switch v := value.(type) {
+	case uint, uint8, uint16, uint32, uint64:
+		_, _ = wt.W.WriteString(fmt.Sprintf("%d", v))
+	default:
+		_, _ = wt.W.WriteString(fmt.Sprintf("%#v", v))
+	}
 }
 
 func (wt WriteTypes) AddBool(key string, value bool) {
