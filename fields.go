@@ -40,6 +40,7 @@ import (
 	"time"
 
 	"github.com/corestoreio/errors"
+	"github.com/corestoreio/pkg/util/bufferpool"
 )
 
 type fieldType uint8
@@ -145,8 +146,8 @@ func (fs Fields) MarshalLog(kv KeyValuer) error {
 // ToString transforms multiple fields into a single string using the
 // format of the type KVStringify.
 func (fs Fields) ToString(msg string) string {
-	buf := getBuffer()
-	defer putBuffer(buf)
+	buf := bufferpool.Get()
+	defer bufferpool.Put(buf)
 	wt := WriteTypes{W: buf}
 
 	_, _ = buf.WriteString(msg)
@@ -189,7 +190,7 @@ func (f field) AddTo(kv KeyValuer) error {
 	case typeInt:
 		kv.AddInt(f.key, int(f.int64))
 	case typeInts:
-		buf := getBuffer()
+		buf := bufferpool.Get()
 		vals := f.obj.([]int)
 		for i, v := range vals {
 			_, _ = buf.WriteString(strconv.Itoa(v))
@@ -198,13 +199,13 @@ func (f field) AddTo(kv KeyValuer) error {
 			}
 		}
 		kv.AddString(f.key, buf.String())
-		putBuffer(buf)
+		bufferpool.Put(buf)
 	case typeInt64:
 		kv.AddInt64(f.key, f.int64)
 	case typeUint64:
 		kv.AddUint64(f.key, f.uint64)
 	case typeInt64s:
-		buf := getBuffer()
+		buf := bufferpool.Get()
 		vals := f.obj.([]int64)
 		for i, v := range vals {
 			_, _ = buf.WriteString(strconv.FormatInt(v, 10))
@@ -213,11 +214,11 @@ func (f field) AddTo(kv KeyValuer) error {
 			}
 		}
 		kv.AddString(f.key, buf.String())
-		putBuffer(buf)
+		bufferpool.Put(buf)
 	case typeString:
 		kv.AddString(f.key, f.string)
 	case typeStrings:
-		buf := getBuffer()
+		buf := bufferpool.Get()
 		vals := f.obj.([]string)
 		for i, s := range vals {
 			_, _ = buf.WriteString(s)
@@ -226,7 +227,7 @@ func (f field) AddTo(kv KeyValuer) error {
 			}
 		}
 		kv.AddString(f.key, buf.String())
-		putBuffer(buf)
+		bufferpool.Put(buf)
 	case typeStringer:
 		kv.AddString(f.key, f.obj.(fmt.Stringer).String())
 	case typeGoStringer:
