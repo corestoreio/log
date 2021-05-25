@@ -27,7 +27,7 @@ import (
 	"github.com/corestoreio/log"
 	"github.com/corestoreio/log/loghttp"
 	"github.com/corestoreio/pkg/util/assert"
-	"github.com/tdewolff/buffer"
+	"github.com/tdewolff/parse/buffer"
 )
 
 const testKey = "MyTestKey"
@@ -76,7 +76,6 @@ func closerWithErr(err error, r io.Reader) io.ReadCloser {
 }
 
 func TestField_Request_Error(t *testing.T) {
-
 	testR := httptest.NewRequest("GET", "/", closerWithErr(errors.New("XErr"), buffer.NewReader(nil)))
 
 	f := loghttp.Request(testKey, testR)
