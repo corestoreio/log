@@ -72,8 +72,8 @@ func (pl *MutexBuffer) Reset() {
 // Reset truncates the buffer to zero length
 func (pl *MutexBuffer) Len() (l int) {
 	// locks for ever
-	//pl.mu.Lock()
-	//defer pl.mu.Unlock()
+	// pl.mu.Lock()
+	// defer pl.mu.Unlock()
 	return pl.buf.Len()
 }
 

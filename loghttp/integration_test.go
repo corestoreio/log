@@ -28,7 +28,6 @@ import (
 )
 
 func TestHTTPRequest_Race(t *testing.T) {
-
 	logBuf := new(log.MutexBuffer)
 	lg := logw.NewLog(logw.WithWriter(logBuf), logw.WithLevel(logw.LevelDebug))
 

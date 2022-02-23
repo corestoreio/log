@@ -74,9 +74,7 @@ type statistician struct {
 	cur  runtime.MemStats
 }
 
-var (
-	stats = new(statistician)
-)
+var stats = new(statistician)
 
 // Now logs the difference of the memory consumption between the first call and
 // subsequent calls of Now. It stores the previous state of runtime.ReadMemStats

@@ -32,23 +32,27 @@ type iFaceCheck struct{}
 func (iFaceCheck) MarshalText() ([]byte, error) {
 	return nil, nil
 }
+
 func (iFaceCheck) MarshalJSON() ([]byte, error) {
 	return nil, nil
 }
 
 // Test if our internal interface definition is up to par with the stdlib.
 var _ textMarshaler = (*iFaceCheck)(nil)
-var _ encoding.TextMarshaler = (*iFaceCheck)(nil)
-var _ jsonMarshaler = (*iFaceCheck)(nil)
-var _ json.Marshaler = (*iFaceCheck)(nil)
-var _ Field = (*field)(nil)
-var _ Field = (*Fields)(nil)
+
+var (
+	_ encoding.TextMarshaler = (*iFaceCheck)(nil)
+	_ jsonMarshaler          = (*iFaceCheck)(nil)
+	_ json.Marshaler         = (*iFaceCheck)(nil)
+	_ Field                  = (*field)(nil)
+	_ Field                  = (*Fields)(nil)
+)
 
 const testKey = "MyTestKey"
 
 func TestFields_ToString(t *testing.T) {
 	xChan := make(chan uint64)
-	var fs = Fields{
+	fs := Fields{
 		String("k1", "v1"),
 		Int("k2", 2),
 		Float64("k3", 3.14159),
@@ -56,11 +60,10 @@ func TestFields_ToString(t *testing.T) {
 	}
 	str := fs.ToString("fieldsKey")
 	assert.Exactly(t, "fieldsKey k1: \"v1\" k2: 2 k3: 3.14159 k4: \"chan uint64\"\n", str)
-
 }
 
 func TestFields_ToString_Error(t *testing.T) {
-	var fs = Fields{
+	fs := Fields{
 		Text("o1", gs{err: errors.New("ErrToString")}),
 		Int("k2", 2),
 		Float64("k3", 3.14159),
@@ -206,6 +209,7 @@ func (g gs) MarshalJSON() ([]byte, error) {
 	}
 	return d, g.err
 }
+
 func (g gs) MarshalLog(kv KeyValuer) error {
 	if g.err != nil {
 		return g.err
@@ -261,7 +265,7 @@ func TestField_Text(t *testing.T) {
 }
 
 func TestField_TextError(t *testing.T) {
-	var data = gs{data: nil, err: errors.New("Errr")}
+	data := gs{data: nil, err: errors.New("Errr")}
 	f := Text(testKey, data).make()
 	assert.Exactly(t, typeStringFn, f.fieldType)
 	assert.Empty(t, f.string)
@@ -271,7 +275,6 @@ func TestField_TextError(t *testing.T) {
 	err := f.AddTo(wt)
 	assert.Empty(t, buf.String())
 	assert.EqualError(t, err, "[log] AddTo.StringFn: [log] AddTo.TextMarshaler: Errr")
-
 }
 
 func TestField_JSON(t *testing.T) {

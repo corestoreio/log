@@ -29,7 +29,6 @@ import (
 )
 
 func TestPeriodically(t *testing.T) {
-
 	var buf bytes.Buffer
 	l := logw.NewLog(
 		logw.WithWriter(&buf),

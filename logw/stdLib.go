@@ -134,7 +134,6 @@ func (l *Log) Info(msg string, fields ...log.Field) {
 
 // log logs a leveled entry. Panics if an unknown level has been provided.
 func (l *Log) log(level int, msg string, fs log.Fields) {
-
 	if ctxl := len(l.ctx); ctxl > 0 {
 		all := make(log.Fields, 0, ctxl+len(fs))
 		all = append(all, l.ctx...)

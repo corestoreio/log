@@ -97,18 +97,23 @@ func (wt WriteTypes) stdSetKV(key string, value interface{}) {
 func (wt WriteTypes) AddBool(key string, value bool) {
 	wt.stdSetKV(key, value)
 }
+
 func (wt WriteTypes) AddFloat64(key string, value float64) {
 	wt.stdSetKV(key, value)
 }
+
 func (wt WriteTypes) AddInt(key string, value int) {
 	wt.stdSetKV(key, value)
 }
+
 func (wt WriteTypes) AddInt64(key string, value int64) {
 	wt.stdSetKV(key, value)
 }
+
 func (wt WriteTypes) AddUint64(key string, value uint64) {
 	wt.stdSetKV(key, value)
 }
+
 func (wt WriteTypes) AddMarshaler(key string, value Marshaler) error {
 	if err := value.MarshalLog(wt); err != nil {
 		if wt.Separator == "" {
@@ -124,9 +129,11 @@ func (wt WriteTypes) AddMarshaler(key string, value Marshaler) error {
 	}
 	return nil
 }
+
 func (wt WriteTypes) AddObject(key string, value interface{}) {
 	wt.stdSetKV(key, value)
 }
+
 func (wt WriteTypes) AddString(key string, value string) {
 	wt.stdSetKV(key, value)
 }

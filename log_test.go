@@ -59,7 +59,7 @@ func testWhenDone(lvl int) func(*testing.T) {
 		} else {
 			assert.NotContains(t, buf.String(), `WhenDoneDebug`)
 			assert.NotContains(t, buf.String(), `key1: 123`)
-			//assert.NotContains(t, buf.String(), log.KeyNameDuration+`: 25`)
+			// assert.NotContains(t, buf.String(), log.KeyNameDuration+`: 25`)
 		}
 		if lvl >= logw.LevelInfo {
 			assert.Contains(t, buf.String(), `WhenDoneInfo`)

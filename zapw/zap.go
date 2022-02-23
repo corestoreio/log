@@ -82,29 +82,36 @@ func doFieldWrap(fs ...log.Field) []zapcore.Field {
 func (se *zapFieldWrap) AddBool(k string, v bool) {
 	se.zf = append(se.zf, zap.Bool(k, v))
 }
+
 func (se *zapFieldWrap) AddFloat64(k string, v float64) {
 	se.zf = append(se.zf, zap.Float64(k, v))
 }
+
 func (se *zapFieldWrap) AddInt(k string, v int) {
 	se.zf = append(se.zf, zap.Int(k, v))
 }
+
 func (se *zapFieldWrap) AddInt64(k string, v int64) {
 	se.zf = append(se.zf, zap.Int64(k, v))
 }
+
 func (se *zapFieldWrap) AddUint64(k string, v uint64) {
 	// zap.Uint64 cannot be used as it has IMHO an architecture bug because the
 	// uint64 gets casted into an int64 and you loose data.
 	se.zf = append(se.zf, zap.String(k, strconv.FormatUint(v, 10)))
 }
+
 func (se *zapFieldWrap) AddMarshaler(k string, v log.Marshaler) error {
 	if err := v.MarshalLog(se); err != nil {
 		se.AddString(log.KeyNameError, fmt.Sprintf("%+v", err))
 	}
 	return nil
 }
+
 func (se *zapFieldWrap) AddObject(k string, v interface{}) {
 	se.zf = append(se.zf, zap.Any(k, v))
 }
+
 func (se *zapFieldWrap) AddString(k string, v string) {
 	se.zf = append(se.zf, zap.String(k, v))
 }

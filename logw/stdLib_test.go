@@ -29,8 +29,7 @@ import (
 var _ log.Logger = (*logw.Log)(nil)
 
 func TestStdLog(t *testing.T) {
-
-	var buf = new(bytes.Buffer)
+	buf := new(bytes.Buffer)
 
 	sl := logw.NewLog(
 		logw.WithLevel(logw.LevelInfo),
@@ -68,11 +67,9 @@ func TestStdLog(t *testing.T) {
 
 	assert.Contains(t, logs, "InfoTEST")
 	assert.Contains(t, logs, "Debug2")
-
 }
 
 func TestStdLogGlobals(t *testing.T) {
-
 	buf := new(bytes.Buffer)
 	sl := logw.NewLog(
 		logw.WithLevel(logw.LevelDebug),
@@ -92,7 +89,6 @@ func TestStdLogGlobals(t *testing.T) {
 }
 
 func TestStdLogFormat(t *testing.T) {
-
 	buf := new(bytes.Buffer)
 	bufInfo := new(bytes.Buffer)
 	sl := logw.NewLog(
@@ -167,7 +163,6 @@ func TestAddMarshaler_Error(t *testing.T) {
 }
 
 func TestLog_With(t *testing.T) {
-
 	buf := new(bytes.Buffer)
 	pLog := logw.NewLog(
 		logw.WithWriter(buf),
@@ -186,5 +181,4 @@ func TestLog_With(t *testing.T) {
 
 	pLog.Info("Parent Info", log.Int("parent_info2", 457))
 	assert.Contains(t, buf.String(), `Parent Info parent_info1_level: 2 parent_info2: 457`)
-
 }

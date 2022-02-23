@@ -16,7 +16,6 @@ package log15w
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/corestoreio/errors"
 	"github.com/corestoreio/log"
@@ -69,14 +68,6 @@ func (l *Wrap) IsInfo() bool {
 	return l.level >= log15.LvlInfo
 }
 
-var log15IFSlicePool = &sync.Pool{
-	New: func() interface{} {
-		return &log15FieldWrap{
-			ifaces: make([]interface{}, 0, 12), // just guessing not more than 12 args / 6 Fields
-		}
-	},
-}
-
 type log15FieldWrap struct {
 	ifaces []interface{}
 }
@@ -89,8 +80,9 @@ func doLog15FieldWrap(ctx log.Fields, fs ...log.Field) []interface{} {
 		fs = all
 	}
 
-	fw := log15IFSlicePool.Get().(*log15FieldWrap)
-	defer log15IFSlicePool.Put(fw)
+	fw := &log15FieldWrap{
+		ifaces: make([]interface{}, 0, 6), // just guessing not more than 6 args / 3 Fields
+	}
 
 	if err := log.Fields(fs).AddTo(fw); err != nil {
 		fw.AddString(log.KeyNameError, fmt.Sprintf("%+v", err))
@@ -105,27 +97,34 @@ func (se *log15FieldWrap) append(key string, val interface{}) {
 func (se *log15FieldWrap) AddBool(k string, v bool) {
 	se.append(k, v)
 }
+
 func (se *log15FieldWrap) AddFloat64(k string, v float64) {
 	se.append(k, v)
 }
+
 func (se *log15FieldWrap) AddInt(k string, v int) {
 	se.append(k, v)
 }
+
 func (se *log15FieldWrap) AddInt64(k string, v int64) {
 	se.append(k, v)
 }
+
 func (se *log15FieldWrap) AddUint64(k string, v uint64) {
 	se.append(k, v)
 }
+
 func (se *log15FieldWrap) AddMarshaler(k string, v log.Marshaler) error {
 	if err := v.MarshalLog(se); err != nil {
 		se.AddString(log.KeyNameError, fmt.Sprintf("%+v", err))
 	}
 	return nil
 }
+
 func (se *log15FieldWrap) AddObject(k string, v interface{}) {
 	se.append(k, v)
 }
+
 func (se *log15FieldWrap) AddString(k string, v string) {
 	se.append(k, v)
 }
